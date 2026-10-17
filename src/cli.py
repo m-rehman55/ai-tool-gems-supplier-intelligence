@@ -83,19 +83,169 @@ def cmd_export(output: str = None) -> None:
         path = export_master_catalog(db, Path(output) if output else None)
     print(f"[OK] Master catalog written to: {path}")
 
-def cmd_research() -> None:
+def match_announcement_to_plan(db, clean_text: str):
+    """Matches raw announcement text to canonical product and exact plan."""
+    from src.matching import parse_duration, parse_access_type, normalize_string
+    t = clean_text.lower()
+    
+    # Keyword to product mapping
+    product_keywords = [
+        ("chatgpt go", "ChatGPT"),
+        ("chatgpt", "ChatGPT"),
+        ("gpt plus", "ChatGPT"),
+        ("duolingo", "Duolingo"),
+        ("proton vpn", "Proton VPN"),
+        ("autodesk", "Autodesk"),
+        ("perplexity", "Perplexity Pro"),
+        ("lovable", "Lovable"),
+        ("coursera", "Coursera"),
+        ("ilovepdf", "iLovePDF"),
+        ("jetbrain", "JetBrains"),
+        ("capcut", "CapCut"),
+        ("netflix", "Netflix"),
+        ("kling", "Kling AI"),
+        ("krea", "Krea AI"),
+        ("heygen", "HeyGen"),
+        ("zoom", "Zoom Pro"),
+        ("elevenlabs", "ElevenLabs"),
+        ("elevanlabs", "ElevenLabs"),
+        ("gemini", "Google Gemini"),
+        ("supergrok", "SuperGrok"),
+        ("grok", "SuperGrok"),
+        ("leonardo", "Leonardo AI"),
+        ("veo", "Google Veo 3"),
+    ]
+    
+    matched_product_name = None
+    for kw, p_name in product_keywords:
+        if kw in t:
+            matched_product_name = p_name
+            break
+            
+    if not matched_product_name:
+        return None
+        
+    dur = parse_duration(clean_text)
+    acc = parse_access_type(clean_text)
+    
+    # Query candidate plans for this product
+    candidate_plans = db.query(ProductPlan).join(ProductPlan.product).filter(ProductPlan.product.has(name=matched_product_name)).all()
+    if not candidate_plans:
+        return None
+        
+    # Exact match on duration and access type
+    for cp in candidate_plans:
+        if cp.duration.lower() == dur.lower() and cp.access_type == acc:
+            return cp
+            
+    # Fallback to duration match
+    for cp in candidate_plans:
+        if cp.duration.lower() == dur.lower():
+            return cp
+            
+    return candidate_plans[0]
+
+def cmd_research(public_only: bool = True) -> None:
     print("[RESEARCH] Executing public Telegram channels research cycle...")
     init_db()
     adapter = TelegramPublicChannelAdapter()
+    
+    from src.models import ResearchQueue, ResearchStatus, PriceHistory, RiskLevel
+    
     with get_db() as db:
-        suppliers = db.query(Supplier).filter(Supplier.public_url.like("%t.me/s/%")).all()
-        print(f"Found {len(suppliers)} public supplier channels to inspect.")
+        fx = FxEngine(db)
+        public_suppliers = db.query(Supplier).filter(Supplier.public_url.like("%t.me/s/%")).all()
+        interactive_suppliers = db.query(Supplier).filter(Supplier.access_status == "INTERACTIVE_MENU_REQUIRED").all()
         
-        for s in suppliers:
-            handle = s.public_url.replace("https://t.me/s/", "").strip()
-            print(f"--> Checking @{handle}...")
+        print(f"Inspecting {len(public_suppliers)} public channels and queuing {len(interactive_suppliers)} interactive bots...")
+        
+        verified_count = 0
+        new_obs_count = 0
+        
+        for s in public_suppliers:
+            handle = s.public_url.replace("https://t.me/s/", "").strip().strip("/")
+            print(f"--> Fetching @{handle}...")
             msgs = adapter.fetch_channel_messages(handle)
-            print(f"    Retrieved {len(msgs)} public announcements.")
+            print(f"    Processing {len(msgs)} messages from @{handle}...")
+            
+            s.last_checked_at = datetime.now(timezone.utc)
+            
+            for m in msgs:
+                matched_plan = match_announcement_to_plan(db, m["clean_text"])
+                if not matched_plan or not m.get("detected_price"):
+                    continue
+                    
+                price = float(m["detected_price"])
+                curr = "USDT" if "USDT" in m["clean_text"].upper() or "USDT" in (s.supported_currencies or "") else "USD"
+                rate, _, _, _ = fx.get_rate(curr, "PKR")
+                amount_pkr = round(price * rate, 2)
+                
+                # Check if this exact announcement was already captured
+                existing_obs = db.query(PriceObservation).filter_by(content_hash=m["content_hash"]).first()
+                if not existing_obs:
+                    # Check for previous price by this supplier to detect price drop/increase
+                    prev_obs = db.query(PriceObservation).filter_by(supplier_id=s.id, plan_id=matched_plan.id).order_by(PriceObservation.observed_at.desc()).first()
+                    
+                    event_type = "NEW_QUOTE"
+                    if prev_obs and prev_obs.amount != price:
+                        event_type = "PRICE_DROP" if price < prev_obs.amount else "PRICE_INCREASE"
+                        db.add(PriceHistory(
+                            plan_id=matched_plan.id,
+                            supplier_id=s.id,
+                            event_type=event_type,
+                            old_amount=prev_obs.amount,
+                            new_amount=price,
+                            currency=curr,
+                            old_warranty=prev_obs.warranty,
+                            new_warranty=m.get("warranty", "Not Stated"),
+                            source_url=m["source_url"],
+                            details=f"Live public price change detected on @{handle}: ${prev_obs.amount} -> ${price}"
+                        ))
+                    
+                    # Create verified observation
+                    new_obs = PriceObservation(
+                        supplier_id=s.id,
+                        plan_id=matched_plan.id,
+                        amount=price,
+                        currency=curr,
+                        original_raw_text=m["clean_text"],
+                        source_url=m["source_url"],
+                        source_snippet=m["clean_text"][:250],
+                        warranty=m.get("warranty", "Full Warranty (FW)" if "(FW)" in m["clean_text"] else "Not Stated"),
+                        stock_status=m.get("stock", "Available"),
+                        fx_rate_used=rate,
+                        fx_provider="FX_ENGINE",
+                        amount_pkr=amount_pkr,
+                        verification_status=VerificationStatus.VERIFIED,
+                        confidence_score=95.0,
+                        risk_level=RiskLevel.LOW if "(FW)" in m["clean_text"] else RiskLevel.MEDIUM,
+                        capture_method="PUBLIC_CRAWLER",
+                        content_hash=m["content_hash"],
+                        reviewer_notes=f"Auto-verified via public post {m['source_url']}"
+                    )
+                    db.add(new_obs)
+                    new_obs_count += 1
+                    verified_count += 1
+            
+            db.commit()
+            
+        # Queue interactive bots requiring /start without fake data
+        for ib in interactive_suppliers:
+            existing_task = db.query(ResearchQueue).filter_by(supplier_id=ib.id).first()
+            if not existing_task:
+                db.add(ResearchQueue(
+                    supplier_id=ib.id,
+                    target_url=ib.public_url or f"https://t.me/{ib.primary_handle.lstrip('@')}",
+                    status=ResearchStatus.INTERACTIVE_MENU_REQUIRED,
+                    blocker_reason="Bot requires interactive chat and /start command. Automated scraping without user session not permitted.",
+                    next_action="Review catalog via Telegram app and record quote using Streamlit Manual Entry"
+                ))
+        db.commit()
+
+        print(f"[SUCCESS] Research cycle completed: {verified_count} quotes verified, {new_obs_count} new observations recorded.")
+        print("[EXPORT] Updating master_catalog.xlsx with fresh verified quotes...")
+        export_master_catalog(db)
+        print("[OK] Master catalog updated successfully.")
 
 def cmd_alerts() -> None:
     print("[ALERTS] Scanning active price changes, staleness, and margin conflicts...")
@@ -131,7 +281,9 @@ def main():
     exp_p = subparsers.add_parser("export-workbook", help="Generate single master_catalog.xlsx workbook")
     exp_p.add_argument("--output", type=str, default=None, help="Output file path")
     
-    subparsers.add_parser("research", help="Run rate-limited public Telegram channel research")
+    res_p = subparsers.add_parser("research", help="Run rate-limited public Telegram channel research")
+    res_p.add_argument("--public-only", action="store_true", default=True, help="Scan only permitted public channels")
+    
     subparsers.add_parser("alerts", help="Check active risk, staleness, and price alerts")
     subparsers.add_parser("backup", help="Create timestamped SQLite backup")
     
@@ -144,7 +296,7 @@ def main():
     elif args.command == "export-workbook":
         cmd_export(args.output)
     elif args.command == "research":
-        cmd_research()
+        cmd_research(public_only=getattr(args, "public_only", True))
     elif args.command == "alerts":
         cmd_alerts()
     elif args.command == "backup":

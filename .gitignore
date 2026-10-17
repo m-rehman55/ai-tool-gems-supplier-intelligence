@@ -1,0 +1,40 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# SQLite & Local Databases (Runtime State - NEVER commit)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/runtime/
+
+# Environment Variables & Secrets (CRITICAL)
+.env
+.env.local
+*.session
+*.session-journal
+client_secret*.json
+credentials*.json
+
+# Logs & Temporary Files
+logs/
+temp/
+tmp/
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Backups
+backups/
+scratch/

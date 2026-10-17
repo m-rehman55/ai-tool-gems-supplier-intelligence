@@ -1,0 +1,53 @@
+name: Daily Public Source Research & Catalog Sync
+
+on:
+  schedule:
+    # 03:00 UTC = 08:00 AM PKT
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out private repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Public Channel Research & Sync
+        run: |
+          python -m src.cli research --public-only
+          python -m src.cli export-workbook
+
+      - name: Commit Updated Master Catalog
+        run: |
+          git config --local user.email "procurement-bot@aitoolgems.tech"
+          git config --local user.name "AIToolGems Procurement Agent"
+          git add master_catalog.xlsx
+          if git diff --staged --quiet; then
+            echo "No catalog changes detected today."
+          else
+            git commit -m "chore(catalog): automated daily public price sync [skip ci]"
+            git push origin main
+          fi

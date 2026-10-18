@@ -246,25 +246,24 @@ class TelegramClientManager private constructor(private val context: Context) {
         val tdlibDb = File(context.filesDir, "tdlib_data").apply { mkdirs() }
         val tdlibFiles = File(context.filesDir, "tdlib_files").apply { mkdirs() }
 
-        val params = TdApi.TdlibParameters().apply {
-            useTestDc = false
-            databaseDirectory = tdlibDb.absolutePath
-            filesDirectory = tdlibFiles.absolutePath
-            databaseEncryptionKey = byteArrayOf()
-            useFileDatabase = true
-            useChatInfoDatabase = true
-            useMessageDatabase = true
-            useSecretChats = false
-            apiId = targetApiId
-            apiHash = targetApiHash
-            systemLanguageCode = "en"
-            deviceModel = "Android " + android.os.Build.MODEL
-            systemVersion = android.os.Build.VERSION.RELEASE
-            applicationVersion = "1.0.1"
-            enableStorageOptimizer = true
-        }
+        val params = TdApi.SetTdlibParameters(
+            false, // useTestDc
+            tdlibDb.absolutePath, // databaseDirectory
+            tdlibFiles.absolutePath, // filesDirectory
+            byteArrayOf(), // databaseEncryptionKey
+            true, // useFileDatabase
+            true, // useChatInfoDatabase
+            true, // useMessageDatabase
+            false, // useSecretChats
+            targetApiId, // apiId
+            targetApiHash, // apiHash
+            "en", // systemLanguageCode
+            "Android " + android.os.Build.MODEL, // deviceModel
+            android.os.Build.VERSION.RELEASE, // systemVersion
+            "1.0.2" // applicationVersion
+        )
 
-        client?.send(TdApi.SetTdlibParameters(params)) { result ->
+        client?.send(params) { result ->
             if (result is TdApi.Error) {
                 notifyState(TelegramAuthState.ERROR, "Parameters rejected: ${result.message} (Code: ${result.code})")
             }
@@ -272,13 +271,8 @@ class TelegramClientManager private constructor(private val context: Context) {
     }
 
     private fun submitPhoneNumber(phone: String) {
-        val settings = TdApi.PhoneNumberAuthenticationSettings().apply {
-            allowFlashCall = false
-            allowMissedCall = false
-            isCurrentPhoneNumber = false
-        }
         notifyState(TelegramAuthState.CONNECTING, "Requesting official login code from Telegram for $phone...")
-        client?.send(TdApi.SetAuthenticationPhoneNumber(phone, settings)) { result ->
+        client?.send(TdApi.SetAuthenticationPhoneNumber(phone, null)) { result ->
             if (result is TdApi.Error) {
                 val errorMsg = when (result.code) {
                     400 -> "Invalid phone number ($phone) or API credentials. Check format (e.g. +81... or +92...)."

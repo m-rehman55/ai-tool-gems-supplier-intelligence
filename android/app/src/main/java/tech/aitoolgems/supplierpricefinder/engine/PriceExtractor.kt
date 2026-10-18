@@ -5,8 +5,8 @@ import java.util.Locale
 object PriceExtractor {
 
     private val REFERRAL_PATTERNS = listOf(
-        "referral", "refer & earn", "invite friends", "in your wallet",
-        "earn free balance", "cashback", "giveaway", "deposit bonus"
+        "referral", "refer", "refer & earn", "invite friends", "in your wallet",
+        "wallet bonus", "earn free balance", "cashback", "giveaway", "deposit bonus"
     )
 
     fun isReferralOrBonusMessage(text: String): Boolean {

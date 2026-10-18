@@ -50,7 +50,8 @@ enum class SearchPolicy(val label: String) {
 enum class SupplierSource(val code: String, val label: String) {
     TELEGRAM_DISCOVERY("TELEGRAM_DISCOVERY", "Telegram Discovered"),
     SEED_DATA("SEED_DATA", "Seed Catalog"),
-    IMPORTED("IMPORTED", "Imported Data")
+    IMPORTED("IMPORTED", "Imported Data"),
+    AUTHORIZED_API("AUTHORIZED_API", "Authorized API")
 }
 
 enum class RiskLevel {

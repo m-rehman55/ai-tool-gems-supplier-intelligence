@@ -11,8 +11,8 @@ android {
         applicationId = "tech.aitoolgems.supplierpricefinder"
         minSdk = 26
         targetSdk = 34
-        versionCode = 8
-        versionName = "1.0.7"
+        versionCode = 9
+        versionName = "1.0.8"
 
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a")
@@ -99,6 +99,12 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
+    // Retrofit & Moshi
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    
     // Telegram TDLib (MTProto native client)
     implementation("io.github.tdlib-android:core:0.1.1")
 

@@ -64,3 +64,20 @@ def test_android_manifest_permissions():
     assert "SEND_SMS" not in manifest_text
     assert "READ_SMS" not in manifest_text
     assert "READ_CONTACTS" not in manifest_text
+
+def test_android_authorized_api_specs():
+    net_dir = ANDROID_DIR / "app" / "src" / "main" / "java" / "tech" / "aitoolgems" / "supplierpricefinder" / "network"
+    assert net_dir.exists(), "network/ package must exist"
+    assert (net_dir / "NetworkModule.kt").exists(), "NetworkModule.kt must exist"
+    assert (net_dir / "api" / "BunnyModels.kt").exists(), "BunnyModels.kt must exist"
+    assert (net_dir / "api" / "BunnyApiService.kt").exists(), "BunnyApiService.kt must exist"
+    assert (net_dir / "api" / "CanbosoModels.kt").exists(), "CanbosoModels.kt must exist"
+    assert (net_dir / "api" / "CanbosoApiService.kt").exists(), "CanbosoApiService.kt must exist"
+    assert (net_dir / "repository" / "ProductRepository.kt").exists(), "ProductRepository.kt must exist"
+
+    # Enforce Rule 8D / 16: No automated purchase requests or wallet payments
+    bunny_api_text = (net_dir / "api" / "BunnyApiService.kt").read_text(encoding="utf-8")
+    canboso_api_text = (net_dir / "api" / "CanbosoApiService.kt").read_text(encoding="utf-8")
+    assert "purchase" not in bunny_api_text.lower(), "BunnyApiService must not contain purchase endpoints"
+    assert "purchase" not in canboso_api_text.lower(), "CanbosoApiService must not contain purchase endpoints"
+

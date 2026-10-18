@@ -270,6 +270,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             "TELEGRAM", "TELEGRAM_DISCOVERY" -> "SELECT * FROM $TABLE_SUPPLIERS WHERE source = 'TELEGRAM_DISCOVERY' ORDER BY canonical_name ASC"
             "SEED", "SEED_DATA" -> "SELECT * FROM $TABLE_SUPPLIERS WHERE source = 'SEED_DATA' ORDER BY canonical_name ASC"
             "IMPORTED" -> "SELECT * FROM $TABLE_SUPPLIERS WHERE source = 'IMPORTED' ORDER BY canonical_name ASC"
+            "API", "AUTHORIZED_API" -> "SELECT * FROM $TABLE_SUPPLIERS WHERE source = 'AUTHORIZED_API' ORDER BY canonical_name ASC"
             else -> "SELECT * FROM $TABLE_SUPPLIERS ORDER BY canonical_name ASC"
         }
         val cursor = db.rawQuery(query, null)

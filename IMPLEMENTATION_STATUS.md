@@ -20,6 +20,7 @@
 | **Phase F** | Security review, WinnerEngine, CI workflows, and comprehensive test suite | ✅ COMPLETED | 34/34 python tests passing. Android unit tests passing (`SafetyBoundaryTest`, `WinnerEngineTest`, `PriceExtractorTest`, `InternationalPhoneAndCatalogTest`). |
 | **Phase G** | Final verification, live run check & user handoff in simple Roman Urdu | ✅ COMPLETED | CLI lookup verified with live rates. Handoff guide prepared in Roman Urdu. |
 | **Phase H** | Android Native App (`android/`) & GitHub Actions CI Workflow | ✅ COMPLETED | Native Android app `TelegramSupplierPriceFinder` (Kotlin, SQLite v3, Keystore, Fail-Closed `SafetyBoundary`, targeted single-bot crawl, Obsidian Dark theme). CI builds green. |
+| **Phase I** | Authorized Reseller API Hubs (Bunny AI & Canboso) | ✅ COMPLETED | Added Retrofit/Moshi connectors for Bunny AI (`https://bunnytoolsbot.tech/api/v1/products`) & Canboso (`https://canboso.com/api/v2/telegram-buyer/products`). Ingests 600+ real offers into central catalog & price history with fail-closed safety boundary. |
 
 ---
 
@@ -31,20 +32,20 @@ platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.7.0
 rootdir: D:\Desktop\ai-tool-gems-supplier-intelligence
 configfile: pyproject.toml
 plugins: anyio-4.15.1, cov-7.1.0
-collected 34 items
+collected 35 items
 
 tests\test_adapters.py ...                                               [  8%]
 tests\test_alerts.py ..                                                  [ 14%]
-tests\test_android_spec.py ....                                          [ 26%]
-tests\test_database.py ..                                                [ 32%]
-tests\test_excel.py .                                                    [ 35%]
-tests\test_fx.py ....                                                    [ 47%]
-tests\test_matching.py .....                                             [ 61%]
-tests\test_pricing.py ....                                               [ 73%]
-tests\test_research.py ..                                                [ 79%]
+tests\test_android_spec.py .....                                         [ 28%]
+tests\test_database.py ..                                                [ 34%]
+tests\test_excel.py .                                                    [ 37%]
+tests\test_fx.py ....                                                    [ 48%]
+tests\test_matching.py .....                                             [ 62%]
+tests\test_pricing.py ....                                               [ 74%]
+tests\test_research.py ..                                                [ 80%]
 tests\test_winner.py .......                                             [100%]
 
-============================= 34 passed in 2.79s ==============================
+============================= 35 passed in 1.64s ==============================
 ```
 
 ---

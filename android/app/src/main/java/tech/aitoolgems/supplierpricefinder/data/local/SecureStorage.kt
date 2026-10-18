@@ -63,10 +63,27 @@ class SecureStorage(context: Context, private val isTestEnvironment: Boolean = f
             prefs?.edit()?.putString("tg_session_token", value)?.apply()
         }
 
+    var bunnyApiKey: String
+        get() = prefs?.getString("bunny_api_key", null) ?: DEFAULT_BUNNY_API_KEY
+        set(value) {
+            prefs?.edit()?.putString("bunny_api_key", value)?.apply()
+        }
+
+    var canbosoApiKey: String
+        get() = prefs?.getString("canboso_api_key", null) ?: DEFAULT_CANBOSO_API_KEY
+        set(value) {
+            prefs?.edit()?.putString("canboso_api_key", value)?.apply()
+        }
+
     val isConfigured: Boolean
         get() = !apiId.isNullOrBlank() && !apiHash.isNullOrBlank()
 
     fun clearCredentials() {
         prefs?.edit()?.clear()?.apply()
+    }
+
+    companion object {
+        const val DEFAULT_BUNNY_API_KEY = "bn_00f8e3dd13db43b27384a437b24df05d"
+        const val DEFAULT_CANBOSO_API_KEY = "tgb_bf132f47e0c72707d99a5927fc65e5998f5563236ce20859"
     }
 }

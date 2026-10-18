@@ -21,6 +21,8 @@ import kotlinx.coroutines.launch
 import tech.aitoolgems.supplierpricefinder.data.local.LocalDatabase
 import tech.aitoolgems.supplierpricefinder.data.local.SecureStorage
 import tech.aitoolgems.supplierpricefinder.data.model.*
+import tech.aitoolgems.supplierpricefinder.network.repository.ProductRepository
+import tech.aitoolgems.supplierpricefinder.network.repository.ApiSyncResult
 import tech.aitoolgems.supplierpricefinder.databinding.ActivityMainBinding
 import tech.aitoolgems.supplierpricefinder.engine.WinnerEngine
 import tech.aitoolgems.supplierpricefinder.telegram.ScanProgressListener
@@ -297,6 +299,30 @@ class MainActivity : AppCompatActivity() {
             binding.progressBarScan.visibility = View.GONE
             binding.layoutScanControls.visibility = View.GONE
             binding.tvScanProgressStatus.text = "Full crawl complete! Extracted ${newlyExtracted.size} total offers & variants across bots."
+
+            // Also synchronize authorized API reseller catalogs (Bunny AI & Canboso) into LocalDatabase
+            lifecycleScope.launch {
+                try {
+                    val apiResult = ProductRepository.syncAuthorizedApiProducts(database, secureStorage)
+                    if (apiResult.totalObservationsSaved > 0) {
+                        runOnUiThread {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Synced ${apiResult.bunnyCount} Bunny + ${apiResult.canbosoCount} Canboso API products into catalog",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            if (currentActiveTab == 1) {
+                                loadAllToolsTab()
+                            } else if (currentActiveTab == 2) {
+                                loadSuppliersTab()
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "Failed to sync reseller API products: ${e.message}")
+                }
+            }
+
             Toast.makeText(this@MainActivity, "Full catalog crawl complete (${newlyExtracted.size} offers)", Toast.LENGTH_LONG).show()
 
             if (currentActiveTab == 1) {
@@ -445,7 +471,8 @@ class MainActivity : AppCompatActivity() {
         val counts = database.getSuppliersCountBySource()
         val tgCount = counts[SupplierSource.TELEGRAM_DISCOVERY.code] ?: 0
         val seedCount = counts[SupplierSource.SEED_DATA.code] ?: 0
-        binding.tvCatalogCountSummary.text = "Suppliers: ${suppliersList.size} ($tgCount Telegram, $seedCount Seed)"
+        val apiCount = counts[SupplierSource.AUTHORIZED_API.code] ?: 0
+        binding.tvCatalogCountSummary.text = "Suppliers: ${suppliersList.size} ($tgCount Telegram, $apiCount API, $seedCount Seed)"
         binding.recyclerViewResults.adapter = SuppliersAdapter(
             suppliersList,
             database = database,

@@ -57,25 +57,24 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.7
-          name: "Telegram Supplier Price Finder v1.0.7 (Executive Production Release — Master UI & Intelligence Polish)"
+          tag_name: v1.0.8
+          name: "Telegram Supplier Price Finder v1.0.8 (Authorized Reseller Hubs & Intelligence Release)"
           draft: false
           prerelease: false
           generate_release_notes: false
           body: |
-            ### 📱 Telegram Supplier Price Finder v1.0.7 (Executive Production Release)
+            ### 📱 Telegram Supplier Price Finder v1.0.8 (Executive Release)
 
             Direct `.apk` file for Android phones with Advanced Supplier Intelligence (SI / AI) & Autonomous Catalog Extraction:
-            - **Per-Bot Product Portfolio & Catalog Viewer**: Tap **📦 Catalog** on any supplier bot to inspect all harvested tools, duration, access model, stock, and warranty.
+            - **⚡ Authorized Reseller API Hubs**: Direct live integration with Bunny AI Reseller Hub (`https://bunnytoolsbot.tech`) and Canboso Wholesale API (`https://canboso.com`), syncing 600+ live AI tool offers.
+            - **🛡️ Fail-Closed Safety Boundary**: Read-only catalog and price extraction only. Automatic purchasing, wallet transactions, and irreversible checkout buttons are strictly blocked.
+            - **🔐 Android Keystore Protection**: Hardware-backed encryption via `SecureStorage` for Telegram MTProto and Reseller API credentials.
             - **🇵🇰 Pakistan Resale Profit Margin Calculator**: Automatically calculates Pakistani retail selling prices with custom profit margins (+20%, +30%, or +Rs. 500 fixed markup) auto-rounded to nearest Rs. 50.
-            - **1-Click WhatsApp Customer Quotations**: Instant copy formatted, professional quotations ready to dispatch to Pakistani buyers on WhatsApp or paste into `aitoolgems.tech`.
-            - **Comprehensive Source-Based Filtering**: Filter results and wholesale catalog by `🤖 TG Discovered` vs `📦 Seed / Demo` across all tabs.
-            - **Aesthetic & Dialog Polish**: Transparent dialog window backgrounds with 16dp rounded corners, high-contrast dark theme, and keyboard-adaptive scrollviews.
-            - **Telegram-Native Discovery**: Discovers live shop bots directly from your authenticated Telegram account dialogs (`ChatTypePrivate` + `UserTypeBot`).
-            - **Active Menu Resumption**: Reuses active keyboards without sending redundant `/start` to existing bots.
-            - **Price Fluctuation History & Market Trends**: Tracks price drops and increases across all bots over time.
-            - **Search Policies**: Supports `⚡ Fast Lookup` and `🌐 Exhaustive Crawl`.
-            - **Optimized ARM APK**: Pre-packaged with native TDLib binaries for arm64-v8a and armeabi-v7a.
+            - **📦 Per-Bot Catalog Profiler**: Inspect full product inventory, durations, access models (Private, Shared, Team, API, Key), stock, and stated warranties.
+            - **1-Click WhatsApp Quotations**: Fast customer quotes formatted and ready for Pakistani buyers or posting to `aitoolgems.tech`.
+            - **Multi-Source Classification**: Granular filtering by `🤖 Telegram Discovered`, `⚡ Authorized API`, and `📦 Seed / Demo`.
+            - **Price History & Fluctuations**: Tracks chronological price increases and drops across all suppliers.
+            - **Optimized ARM APK**: Pre-packaged native TDLib binaries for arm64-v8a and armeabi-v7a.
 
             #### ⚠️ Installation Note:
             If you previously installed an older version on your phone, **uninstall (delete) the old app first**, then download and install `app-debug.apk`.

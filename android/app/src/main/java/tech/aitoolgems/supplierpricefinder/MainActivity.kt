@@ -187,7 +187,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            val newlyExtracted = scanner.scanSuppliersForTool(toolName, object : ScanProgressListener {
+            val newlyExtracted = scanner.scanSuppliersForTool(
+                targetTool = toolName,
+                targetSupplierId = null,
+                listener = object : ScanProgressListener {
                 override fun onSupplierScanning(supplierHandle: String, message: String) {
                     runOnUiThread {
                         binding.tvScanProgressStatus.text = "[$supplierHandle] $message"

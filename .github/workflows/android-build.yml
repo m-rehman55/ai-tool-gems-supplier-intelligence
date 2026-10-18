@@ -57,20 +57,21 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.3
-          name: "Telegram Supplier Price Finder v1.0.3 (Direct Installable APK)"
+          tag_name: v1.0.4
+          name: "Telegram Supplier Price Finder v1.0.4 (Adaptive Bot Crawler & Catalog Extraction)"
           draft: false
           prerelease: false
           generate_release_notes: false
           body: |
-            ### 📱 Telegram Supplier Price Finder v1.0.3 (Direct APK Download)
+            ### 📱 Telegram Supplier Price Finder v1.0.4 (Direct APK Download)
 
-            Direct `.apk` file for Android phones:
-            - **Package Parse Error Fixed**: Removed conflicting `<uses-sdk>` manifest tags that caused "Package appears to be invalid" on Android devices.
-            - **Optimized ARM APK**: Excluded unnecessary x86 PC emulator binaries, reducing the APK size from 100 MB down to ~40 MB for faster, corruption-free downloads.
-            - **v1 + v2 APK Signatures**: Verified compatible with Android 8.0 through Android 14+.
-            - **Genuine MTProto TDLib Engine**: Live Telegram DC connection to deliver 5-digit verification codes to active Telegram accounts (Japan, Pakistan, worldwide).
-            - **Preloaded AI Tools**: Popular tools (ChatGPT Plus, Canva Pro, Gemini, Claude, Netflix) ready for wholesale comparison.
+            Direct `.apk` file for Android phones with Adaptive Telegram Bot Crawler:
+            - **Adaptive Bot Crawler**: Intelligently navigates bot menus (reply & inline keyboards, message edits, pagination, back-navigation).
+            - **Multi-Variant Extraction**: Safely extracts all pricing tiers (1-day, 1-month, 4-month, 1-year) with durable source evidence.
+            - **Deterministic Safety Boundary**: Hard-blocks payment/checkout/deposit buttons (`Buy Now`, `Pay`, `Checkout`); bare `Buy` flags an interactive approval dialog once and stores a verified playbook.
+            - **Gate & Side-Effect Approval**: Detects required group/channel gates and requires explicit user consent before any account actions.
+            - **Truthful Provenance**: Distinguishes `LIVE_OBSERVED_UNVERIFIED`, `CACHED`, `SEED_CATALOG`, and `VERIFIED` statuses.
+            - **Optimized ARM APK**: Pre-packaged with native TDLib binaries for arm64-v8a and armeabi-v7a.
 
             #### ⚠️ Important Installation Note:
             If you previously installed an older version on your phone, **please uninstall (delete) the old app first**, then download and install `app-debug.apk`.

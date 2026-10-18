@@ -82,6 +82,34 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Full Catalog Scan button
+        binding.btnFullCatalogScan.setOnClickListener {
+            performFullCatalogCrawl()
+        }
+
+        // In-progress scan controls
+        binding.btnPauseScan.setOnClickListener {
+            scanner.pauseScan()
+            binding.btnPauseScan.visibility = View.GONE
+            binding.btnResumeScan.visibility = View.VISIBLE
+            binding.tvScanProgressStatus.text = "⏸ Scan paused by user."
+        }
+
+        binding.btnResumeScan.setOnClickListener {
+            scanner.resumeScan()
+            binding.btnResumeScan.visibility = View.GONE
+            binding.btnPauseScan.visibility = View.VISIBLE
+            binding.tvScanProgressStatus.text = "▶ Resuming crawler..."
+        }
+
+        binding.btnCancelScan.setOnClickListener {
+            scanner.cancelScan()
+            binding.progressBarScan.visibility = View.GONE
+            binding.layoutScanControls.visibility = View.GONE
+            binding.tvScanProgressStatus.text = "Scan cancelled by user."
+            Toast.makeText(this, "Scan cancelled.", Toast.LENGTH_SHORT).show()
+        }
+
         // Filter chips
         binding.chipGroupFilters.setOnCheckedStateChangeListener { _, checkedIds ->
             currentFilterAccess = when {
@@ -189,9 +217,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun performLiveScan(toolName: String) {
         binding.progressBarScan.visibility = View.VISIBLE
+        binding.layoutScanControls.visibility = View.VISIBLE
+        binding.btnPauseScan.visibility = View.VISIBLE
+        binding.btnResumeScan.visibility = View.GONE
         binding.tvScanProgressStatus.text = "Starting live scanner for '$toolName' across configured bots..."
 
-        // Immediately show cached/seeded observations first so the screen is never blank!
         val initialCached = database.getObservationsForQuery(toolName)
         if (initialCached.isNotEmpty()) {
             observationsList.clear()
@@ -203,35 +233,16 @@ class MainActivity : AppCompatActivity() {
             val newlyExtracted = scanner.scanSuppliersForTool(
                 targetTool = toolName,
                 targetSupplierId = null,
-                listener = object : ScanProgressListener {
-                override fun onSupplierScanning(supplierHandle: String, message: String) {
-                    runOnUiThread {
-                        binding.tvScanProgressStatus.text = "[$supplierHandle] $message"
-                    }
-                }
-
-                override fun onProductExtracted(observation: PriceObservation) {
-                    runOnUiThread {
-                        if (observationsList.none { it.id == observation.id || (it.matchingKey == observation.matchingKey && it.supplierId == observation.supplierId) }) {
-                            observationsList.add(0, observation)
-                            filterAndDisplayResults()
-                        }
-                    }
-                }
-
-                override fun onSupplierBlocked(supplierHandle: String, reason: String) {
-                    runOnUiThread {
-                        binding.tvScanProgressStatus.text = "⚠️ [$supplierHandle] $reason"
-                    }
-                }
-            })
+                listener = createScanListener()
+            )
 
             binding.progressBarScan.visibility = View.GONE
+            binding.layoutScanControls.visibility = View.GONE
             val finalMatches = database.getObservationsForQuery(toolName)
             if (finalMatches.isNotEmpty()) {
                 observationsList.clear()
                 observationsList.addAll(finalMatches)
-                binding.tvScanProgressStatus.text = "Scan complete. Found ${finalMatches.size} verified quote(s) for '$toolName'."
+                binding.tvScanProgressStatus.text = "Scan complete. Found ${finalMatches.size} quote(s) for '$toolName'."
             } else {
                 binding.tvScanProgressStatus.text = "No direct stock for '$toolName'. Showing popular wholesale tools below."
                 observationsList.clear()
@@ -239,6 +250,94 @@ class MainActivity : AppCompatActivity() {
             }
             filterAndDisplayResults()
         }
+    }
+
+    private fun performFullCatalogCrawl() {
+        binding.progressBarScan.visibility = View.VISIBLE
+        binding.layoutScanControls.visibility = View.VISIBLE
+        binding.btnPauseScan.visibility = View.VISIBLE
+        binding.btnResumeScan.visibility = View.GONE
+        binding.tvScanProgressStatus.text = "Starting full catalog crawl across all enabled supplier bots..."
+
+        lifecycleScope.launch {
+            val newlyExtracted = scanner.scanSuppliersForTool(
+                targetTool = "",
+                targetSupplierId = null,
+                listener = createScanListener()
+            )
+
+            binding.progressBarScan.visibility = View.GONE
+            binding.layoutScanControls.visibility = View.GONE
+            binding.tvScanProgressStatus.text = "Full crawl complete! Extracted ${newlyExtracted.size} total offers & variants across bots."
+            Toast.makeText(this@MainActivity, "Full catalog crawl complete (${newlyExtracted.size} offers)", Toast.LENGTH_LONG).show()
+
+            if (currentActiveTab == 1) {
+                loadAllToolsTab()
+            } else {
+                loadInitialData()
+            }
+        }
+    }
+
+    private fun createScanListener(): ScanProgressListener {
+        return object : ScanProgressListener {
+            override fun onSupplierScanning(supplierHandle: String, message: String) {
+                runOnUiThread {
+                    binding.tvScanProgressStatus.text = "[$supplierHandle] $message"
+                }
+            }
+
+            override fun onProductExtracted(observation: PriceObservation) {
+                runOnUiThread {
+                    if (observationsList.none { it.id == observation.id || (it.matchingKey == observation.matchingKey && it.supplierId == observation.supplierId) }) {
+                        observationsList.add(0, observation)
+                        filterAndDisplayResults()
+                    }
+                }
+            }
+
+            override fun onSupplierBlocked(supplierHandle: String, reason: String) {
+                runOnUiThread {
+                    binding.tvScanProgressStatus.text = "⚠️ [$supplierHandle] $reason"
+                }
+            }
+
+            override fun onApprovalRequired(item: ManualReviewItem, onDecision: (Boolean) -> Unit) {
+                runOnUiThread {
+                    showApprovalDialog(item, onDecision)
+                }
+            }
+        }
+    }
+
+    private fun showApprovalDialog(item: ManualReviewItem, onDecision: (Boolean) -> Unit) {
+        val title = if (item.itemType == "MEMBERSHIP_GATE") {
+            "Telegram Channel Membership Required"
+        } else {
+            "Confirm Bot Navigation Button"
+        }
+
+        val msg = if (item.itemType == "MEMBERSHIP_GATE") {
+            "Bot ${item.supplierHandle} requires joining ${item.targetHandleOrUrl ?: "a channel"} to unlock its catalog.\n\n" +
+            "Safety Policy: Joining will be recorded on your Telegram account. Do you authorize this channel join?"
+        } else {
+            "${item.promptMessage}\n\nEvidence: ${item.rawEvidence}\n\n" +
+            "Safety Policy: If this button opens a catalog list, tap 'Approve'. If it is an immediate purchase, tap 'Deny'."
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(msg)
+            .setCancelable(false)
+            .setPositiveButton(if (item.itemType == "MEMBERSHIP_GATE") "Approve & Join" else "Yes, Opens Catalog") { _, _ ->
+                database.updateReviewItemStatus(item.id, "APPROVED")
+                onDecision(true)
+            }
+            .setNegativeButton("Deny / Skip") { _, _ ->
+                database.updateReviewItemStatus(item.id, "REJECTED")
+                onDecision(false)
+            }
+            .show()
     }
 
     private fun filterAndDisplayResults() {
@@ -331,8 +430,65 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadHistoryTab() {
-        val allHistory = database.getObservationsForQuery("")
-        binding.recyclerViewResults.adapter = ResultsAdapter(allHistory)
+        val runs = database.getAllScanRuns()
+        if (runs.isNotEmpty()) {
+            binding.recyclerViewResults.adapter = ScanRunsAdapter(runs)
+        } else {
+            val allHistory = database.getObservationsForQuery("")
+            binding.recyclerViewResults.adapter = ResultsAdapter(allHistory)
+        }
+    }
+
+    private fun showObservationDetailsDialog(obs: PriceObservation) {
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT)
+        val dateStr = sdf.format(Date(obs.observedAt))
+        val msg = """
+            📦 Product: ${obs.productName}
+            🏷 Plan Name: ${obs.planName}
+            ⏱ Duration: ${obs.duration}
+            👤 Access Model: ${obs.accessType.name}
+            💵 Wholesale Cost: $${String.format(Locale.ROOT, "%.2f", obs.amount)} ${obs.currency}
+            🇵🇰 Estimated PKR: Rs. ${String.format(Locale.ROOT, "%,.0f", obs.amountPkr)} PKR
+            🛡 Stated Warranty: ${obs.warranty}
+            📦 Stock Status: ${obs.stockStatus}
+            🔍 Verification: ${obs.verificationStatus.name}
+            🤖 Supplier: ${obs.supplierName} (${obs.supplierHandle})
+            📡 Capture Method: ${obs.captureMethod}
+            🕒 Observed At: $dateStr
+            🔗 Source: ${obs.sourceUrl ?: "Private MTProto Bot"}
+
+            📝 Raw Source Evidence:
+            "${obs.originalRawText}"
+        """.trimIndent()
+
+        AlertDialog.Builder(this)
+            .setTitle("Wholesale Evidence Record")
+            .setMessage(msg)
+            .setPositiveButton("Copy for Store") { _, _ ->
+                copyToClipboard(obs)
+            }
+            .setNegativeButton("Close", null)
+            .show()
+    }
+
+    private fun showRunTimelineDialog(run: ScanRun) {
+        val events = database.getTimelineForRun(run.id)
+        val sdf = SimpleDateFormat("HH:mm:ss", Locale.ROOT)
+        val lines = if (events.isEmpty()) {
+            "No granular timeline events logged for this scan run."
+        } else {
+            events.joinToString("\n\n") { ev ->
+                "⏱ [${sdf.format(Date(ev.timestamp))}] ${ev.supplierHandle} | ${ev.state.name}\n" +
+                "Action: ${ev.actionLabel} (${ev.actionType.name}) → ${ev.outcomeStatus}\n" +
+                "Reason: ${ev.decisionReason}"
+            }
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Scan Run Audit Timeline (${run.trigger})")
+            .setMessage("Status: ${run.status} | Found: ${run.totalOffersFound} offers\n\n$lines")
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     private fun copyToClipboard(observation: PriceObservation) {
@@ -567,12 +723,73 @@ class MainActivity : AppCompatActivity() {
             holder.tvPrice.text = "$${String.format(Locale.ROOT, "%.2f", item.amount)} ${item.currency}"
             holder.tvPkr.text = "~Rs. ${String.format(Locale.ROOT, "%,.0f", item.amountPkr)} PKR"
             holder.tvDetails.text = "${item.duration} | ${item.accessType.name} | ${item.warranty}"
-            holder.tvBadgeVerification.text = item.verificationStatus.name
+            when (item.verificationStatus) {
+                VerificationStatus.LIVE_OBSERVED_UNVERIFIED -> {
+                    holder.tvBadgeVerification.text = "LIVE NOW"
+                    holder.tvBadgeVerification.setBackgroundColor(getColor(R.color.badge_verified))
+                    holder.tvBadgeVerification.setTextColor(getColor(R.color.badge_verified_text))
+                }
+                VerificationStatus.VERIFIED -> {
+                    holder.tvBadgeVerification.text = "VERIFIED"
+                    holder.tvBadgeVerification.setBackgroundColor(getColor(R.color.badge_verified))
+                    holder.tvBadgeVerification.setTextColor(getColor(R.color.badge_verified_text))
+                }
+                VerificationStatus.CACHED -> {
+                    holder.tvBadgeVerification.text = "CACHED"
+                    holder.tvBadgeVerification.setBackgroundColor(getColor(R.color.card_elevated))
+                    holder.tvBadgeVerification.setTextColor(getColor(R.color.text_secondary))
+                }
+                VerificationStatus.SEED_CATALOG -> {
+                    holder.tvBadgeVerification.text = "SEED DATA"
+                    holder.tvBadgeVerification.setBackgroundColor(getColor(R.color.card_elevated))
+                    holder.tvBadgeVerification.setTextColor(getColor(R.color.accent))
+                }
+                else -> {
+                    holder.tvBadgeVerification.text = "PREVIEW"
+                    holder.tvBadgeVerification.setBackgroundColor(getColor(R.color.badge_unverified))
+                    holder.tvBadgeVerification.setTextColor(getColor(R.color.badge_unverified_text))
+                }
+            }
 
-            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ROOT)
-            holder.tvTimestamp.text = "Checked: ${sdf.format(Date(item.observedAt))}"
+            holder.tvEvidence.text = "📋 Copy"
+            holder.tvEvidence.setOnClickListener {
+                copyToClipboard(item)
+            }
+            holder.view.setOnClickListener {
+                showObservationDetailsDialog(item)
+            }
+        }
 
-            if (item.verificationStatus == VerificationStatus.VERIFIED) {
+        override fun getItemCount() = list.size
+    }
+
+    // Scan Runs Adapter (Tab 3: Scan Run History & Audit Timeline)
+    inner class ScanRunsAdapter(private val runs: List<ScanRun>) : RecyclerView.Adapter<ScanRunsAdapter.ViewHolder>() {
+        inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+            val tvRank: TextView = view.findViewById(R.id.tvItemRank)
+            val tvSupplier: TextView = view.findViewById(R.id.tvItemSupplier)
+            val tvPrice: TextView = view.findViewById(R.id.tvItemPrice)
+            val tvDetails: TextView = view.findViewById(R.id.tvItemDetails)
+            val tvPkr: TextView = view.findViewById(R.id.tvItemPkr)
+            val tvBadgeVerification: TextView = view.findViewById(R.id.tvItemBadgeVerification)
+            val tvTimestamp: TextView = view.findViewById(R.id.tvItemTimestamp)
+            val tvEvidence: TextView = view.findViewById(R.id.tvItemEvidence)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_supplier_result, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val run = runs[position]
+            holder.tvRank.text = "#${position + 1}"
+            holder.tvSupplier.text = "${run.trigger} (${run.status})"
+            holder.tvPrice.text = "${run.totalOffersFound} Offers"
+            holder.tvPkr.text = "${run.totalSuppliers} Bots"
+            holder.tvDetails.text = "Completed: ${run.completedSuppliers} | Partial: ${run.partialSuppliers} | Blocked: ${run.blockedSuppliers}"
+            holder.tvBadgeVerification.text = run.status
+            if (run.status == "COMPLETED") {
                 holder.tvBadgeVerification.setBackgroundColor(getColor(R.color.badge_verified))
                 holder.tvBadgeVerification.setTextColor(getColor(R.color.badge_verified_text))
             } else {
@@ -580,16 +797,18 @@ class MainActivity : AppCompatActivity() {
                 holder.tvBadgeVerification.setTextColor(getColor(R.color.badge_unverified_text))
             }
 
-            holder.tvEvidence.text = "📋 Copy for Store"
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ROOT)
+            holder.tvTimestamp.text = "Started: ${sdf.format(Date(run.startedAt))}"
+            holder.tvEvidence.text = "📜 Timeline"
             holder.tvEvidence.setOnClickListener {
-                copyToClipboard(item)
+                showRunTimelineDialog(run)
             }
             holder.view.setOnClickListener {
-                copyToClipboard(item)
+                showRunTimelineDialog(run)
             }
         }
 
-        override fun getItemCount() = list.size
+        override fun getItemCount() = runs.size
     }
 
     // All Tools Master Catalog Adapter (Tab 1: All Wholesale Products)

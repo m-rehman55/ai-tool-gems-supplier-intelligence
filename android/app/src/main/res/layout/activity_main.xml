@@ -184,6 +184,18 @@
                         app:icon="@android:drawable/ic_menu_search"
                         app:iconTint="@color/primary_dark" />
 
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFullCatalogScan"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="🌐 Full Crawl"
+                        android:textColor="@color/primary"
+                        android:textStyle="bold"
+                        app:cornerRadius="8dp"
+                        app:strokeColor="@color/primary" />
+
                 </LinearLayout>
 
                 <!-- Live Progress indicator -->
@@ -204,6 +216,51 @@
                     android:text="@string/scan_progress_idle"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
+
+                <!-- In-Progress Scan Controls (Pause, Resume, Cancel) -->
+                <LinearLayout
+                    android:id="@+id/layoutScanControls"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPauseScan"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="⏸ Pause"
+                        android:textColor="@color/accent"
+                        android:textSize="11sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnResumeScan"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="▶ Resume"
+                        android:textColor="@color/primary"
+                        android:textSize="11sp"
+                        android:visibility="gone" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCancelScan"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="✕ Cancel"
+                        android:textColor="@color/badge_risk_text"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 

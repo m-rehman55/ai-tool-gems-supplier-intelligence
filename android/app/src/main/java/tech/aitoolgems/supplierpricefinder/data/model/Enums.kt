@@ -27,6 +27,9 @@ enum class AccessType(val label: String) {
 
 enum class VerificationStatus(val label: String) {
     VERIFIED("VERIFIED"),
+    LIVE_OBSERVED_UNVERIFIED("LIVE_OBSERVED_UNVERIFIED"),
+    CACHED("CACHED"),
+    SEED_CATALOG("SEED_CATALOG"),
     USER_SUPPLIED_UNVERIFIED("USER_SUPPLIED_UNVERIFIED"),
     UNVERIFIED("UNVERIFIED"),
     STALE("STALE"),

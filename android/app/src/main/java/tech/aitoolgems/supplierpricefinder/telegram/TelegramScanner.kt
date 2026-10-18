@@ -13,6 +13,7 @@ import tech.aitoolgems.supplierpricefinder.engine.PlanMatcher
 import tech.aitoolgems.supplierpricefinder.engine.PriceExtractor
 import tech.aitoolgems.supplierpricefinder.engine.SafetyBoundary
 import java.util.Locale
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
@@ -20,6 +21,8 @@ interface ScanProgressListener {
     fun onSupplierScanning(supplierHandle: String, message: String)
     fun onProductExtracted(observation: PriceObservation)
     fun onSupplierBlocked(supplierHandle: String, reason: String)
+    fun onApprovalRequired(item: ManualReviewItem, onDecision: (Boolean) -> Unit) {}
+    fun onStateChanged(supplierHandle: String, state: CrawlerState, message: String) {}
 }
 
 class TelegramScanner(
@@ -33,49 +36,103 @@ class TelegramScanner(
         .readTimeout(2500, TimeUnit.MILLISECONDS)
         .build()
 
+    private val tgManager = TelegramClientManager.getInstance(context)
+    val adaptiveCrawler = AdaptiveBotCrawler(context, database, tgManager)
+
     var isRunning: Boolean = false
         private set
 
+    fun cancelScan() {
+        adaptiveCrawler.cancel()
+        isRunning = false
+    }
+
+    fun pauseScan() {
+        adaptiveCrawler.pause()
+    }
+
+    fun resumeScan() {
+        adaptiveCrawler.resume()
+    }
+
+    /**
+     * Executes an adaptive scan across suppliers for a specific tool or full catalog.
+     */
     suspend fun scanSuppliersForTool(
         targetTool: String,
         targetSupplierId: Long? = null,
         listener: ScanProgressListener? = null
     ): List<PriceObservation> = withContext(Dispatchers.IO) {
         isRunning = true
+        val runUuid = UUID.randomUUID().toString()
+        val allSuppliers = database.getAllSuppliers().filter { it.isEnabled }
+        val suppliers = if (targetSupplierId != null) {
+            allSuppliers.filter { it.id == targetSupplierId }
+        } else {
+            allSuppliers
+        }
+
+        val trigger = if (targetSupplierId != null) "SINGLE_SUPPLIER_SCAN" else (if (targetTool.isEmpty()) "FULL_CATALOG_SCAN" else "SEARCH_TOOL_SCAN")
+        val runId = database.startScanRun(runUuid, trigger, suppliers.size)
+        val targetQuery = targetTool.trim()
+
         try {
             val results = mutableListOf<PriceObservation>()
-            val allSuppliers = database.getAllSuppliers().filter { it.isEnabled }
-            val suppliers = if (targetSupplierId != null) {
-                allSuppliers.filter { it.id == targetSupplierId }
-            } else {
-                allSuppliers
-            }
-            val targetQuery = targetTool.trim()
-
             val fxRateUsdToPkr = 280.0
             val fxRateUsdtToPkr = 282.5
 
-            for (supplier in suppliers) {
-                listener?.onSupplierScanning(supplier.primaryHandle, "Connecting to ${supplier.canonicalName}...")
-                delay(120) // Respect rate limits and Telegram flood control
+            var completedSuppliers = 0
+            var partialSuppliers = 0
+            var blockedSuppliers = 0
 
-                val supplierQuotes = mutableListOf<PriceObservation>()
-
-                // 1. If Telegram MTProto is authenticated, inspect real bot via TDLib!
-                val tgManager = TelegramClientManager.getInstance(context)
-                if (tgManager.currentAuthState == TelegramAuthState.AUTHENTICATED) {
-                    try {
-                        val botQuotes = tgManager.inspectSupplierBot(supplier.primaryHandle, targetQuery) { msg ->
-                            listener?.onSupplierScanning(supplier.primaryHandle, msg)
+            // 1. If Telegram MTProto is authenticated, run genuine adaptive crawler
+            if (tgManager.currentAuthState == TelegramAuthState.AUTHENTICATED) {
+                listener?.onSupplierScanning("CRAWLER", "Using genuine MTProto TDLib connection for ${suppliers.size} supplier(s)...")
+                val crawlResults = adaptiveCrawler.executeCrawl(
+                    suppliers = suppliers,
+                    targetProductQuery = targetQuery,
+                    runId = runId,
+                    listener = object : AdaptiveCrawlListener {
+                        override fun onStateChanged(supplierHandle: String, state: CrawlerState, message: String) {
+                            listener?.onStateChanged(supplierHandle, state, message)
+                            listener?.onSupplierScanning(supplierHandle, message)
                         }
-                        supplierQuotes.addAll(botQuotes)
-                    } catch (e: Exception) {
-                        // TDLib bot scan fallback
+
+                        override fun onProgressUpdate(stepText: String, completedSuppliers: Int, totalSuppliers: Int) {
+                            listener?.onSupplierScanning("SYSTEM", stepText)
+                        }
+
+                        override fun onVariantDiscovered(observation: PriceObservation) {
+                            results.add(observation)
+                            listener?.onProductExtracted(observation)
+                        }
+
+                        override fun onApprovalRequired(item: ManualReviewItem, onDecision: (Boolean) -> Unit) {
+                            listener?.onApprovalRequired(item, onDecision)
+                        }
+
+                        override fun onTimelineEvent(event: NavigationTimelineEvent) {
+                            // Persisted by crawler
+                        }
+                    }
+                )
+
+                if (crawlResults.isNotEmpty()) {
+                    for (obs in crawlResults) {
+                        if (results.none { it.id == obs.id || (it.matchingKey == obs.matchingKey && it.supplierId == obs.supplierId) }) {
+                            results.add(obs)
+                        }
                     }
                 }
+            }
 
-                // 2. Fallback: attempt live channel preview fetch from publicUrl or direct handle preview
-                if (supplierQuotes.isEmpty()) {
+            // 2. Fallback / supplementary preview for suppliers that yielded no live bot observations
+            for (supplier in suppliers) {
+                val hasLiveOffers = results.any { it.supplierId == supplier.id }
+                if (!hasLiveOffers) {
+                    listener?.onSupplierScanning(supplier.primaryHandle, "Checking public web preview for ${supplier.canonicalName}...")
+                    delay(100)
+
                     val channelHandle = supplier.primaryHandle.trim().removePrefix("@")
                     val targetUrl = when {
                         !supplier.publicUrl.isNullOrEmpty() && supplier.publicUrl.contains("t.me/s/") -> supplier.publicUrl
@@ -92,40 +149,61 @@ class TelegramScanner(
                             if (resp.isSuccessful) {
                                 val body = resp.body?.string() ?: ""
                                 val liveQuotes = parseChannelHtml(body, supplier, targetQuery, fxRateUsdToPkr, fxRateUsdtToPkr)
-                                supplierQuotes.addAll(liveQuotes)
+                                for (obs in liveQuotes) {
+                                    val safety = SafetyBoundary.checkButtonSafety(obs.planName)
+                                    if (safety.isSafe) {
+                                        if (results.none { it.matchingKey == obs.matchingKey && it.supplierId == obs.supplierId }) {
+                                            results.add(obs)
+                                            database.saveObservation(obs)
+                                            listener?.onProductExtracted(obs)
+                                        }
+                                    } else {
+                                        listener?.onSupplierBlocked(supplier.primaryHandle, "Blocked: ${obs.planName} (${safety.reason})")
+                                    }
+                                }
                             }
                         }
                     } catch (e: Exception) {
-                        // Network timeout, rate limit, or VPN required -> log status for transparency
+                        // Network timeout or VPN requirement
                     }
-                }
 
-                // 3. If live network didn't yield quotes, check stored observations for this supplier
-                if (supplierQuotes.isEmpty()) {
-                    val dbQuotes = database.getObservationsForSupplierAndQuery(supplier.id, targetQuery)
-                    supplierQuotes.addAll(dbQuotes)
-                }
-
-                // 3. For every extracted quote, verify safety boundary and emit
-                if (supplierQuotes.isNotEmpty()) {
-                    for (obs in supplierQuotes) {
-                        val safety = SafetyBoundary.checkButtonSafety(obs.planName)
-                        if (safety.isSafe) {
-                            if (results.none { it.id == obs.id || (it.matchingKey == obs.matchingKey && it.supplierId == obs.supplierId) }) {
-                                results.add(obs)
-                                database.saveObservation(obs)
-                                listener?.onProductExtracted(obs)
+                    // 3. Truthful local cache fallback: clearly marked as CACHED
+                    val stillNoOffers = results.none { it.supplierId == supplier.id }
+                    if (stillNoOffers) {
+                        val dbQuotes = database.getObservationsForSupplierAndQuery(supplier.id, targetQuery)
+                        for (cached in dbQuotes) {
+                            val markedCached = cached.copy(
+                                verificationStatus = VerificationStatus.CACHED,
+                                captureMethod = "LOCAL_DATABASE_CACHE"
+                            )
+                            if (results.none { it.matchingKey == markedCached.matchingKey && it.supplierId == markedCached.supplierId }) {
+                                results.add(markedCached)
                             }
-                        } else {
-                            listener?.onSupplierBlocked(supplier.primaryHandle, "Blocked: ${obs.planName} (${safety.reason})")
                         }
                     }
-                    listener?.onSupplierScanning(supplier.primaryHandle, "Found ${supplierQuotes.size} quote(s) for '$targetQuery'")
-                } else {
-                    listener?.onSupplierScanning(supplier.primaryHandle, "Inspected. No current offers for '$targetQuery'.")
                 }
             }
+
+            // Update ScanRun status in DB
+            val finalRun = database.getLatestScanRun()
+            if (finalRun != null && finalRun.id == runId) {
+                finalRun.completedAt = System.currentTimeMillis()
+                finalRun.status = "COMPLETED"
+                finalRun.totalOffersFound = results.size
+                finalRun.totalVariantsFound = results.size
+                database.updateScanRun(finalRun)
+            }
+
             results
+        } catch (e: Exception) {
+            val finalRun = database.getLatestScanRun()
+            if (finalRun != null && finalRun.id == runId) {
+                finalRun.completedAt = System.currentTimeMillis()
+                finalRun.status = "FAILED"
+                finalRun.errorLog = e.localizedMessage ?: e.javaClass.simpleName
+                database.updateScanRun(finalRun)
+            }
+            throw e
         } finally {
             isRunning = false
         }
@@ -152,7 +230,7 @@ class TelegramScanner(
                 .replace("&#39;", "'")
                 .trim()
 
-            // Skip referral rewards ($0.10 wallet bonus spam)
+            // Skip referral rewards
             if (clean.contains("referral", ignoreCase = true) ||
                 clean.contains("invite friends", ignoreCase = true) ||
                 clean.contains("earn free balance", ignoreCase = true)
@@ -160,7 +238,6 @@ class TelegramScanner(
                 continue
             }
 
-            // Filter for target query or include if target query is empty
             if (clean.contains(lowerTarget, ignoreCase = true) || targetQuery.isEmpty()) {
                 val (price, currency) = PriceExtractor.extractPrice(clean)
                 if (price != null && price >= 0.20) {
@@ -168,9 +245,8 @@ class TelegramScanner(
                     val accessType = PlanMatcher.parseAccessType(clean)
                     val matchingKey = PlanMatcher.generateMatchingKey(targetQuery, clean.lines().firstOrNull() ?: targetQuery, duration, accessType)
 
-                    // Strict currency routing: Never multiply PKR by USD FX rate!
                     val pkr = when (currency.uppercase(Locale.ROOT)) {
-                        "PKR" -> price
+                        "PKR" -> price // 1.0 multiplier
                         "USDT" -> price * usdtRate
                         "USD" -> price * usdRate
                         else -> price * usdRate
@@ -191,7 +267,6 @@ class TelegramScanner(
                             amountPkr = pkr,
                             warranty = PriceExtractor.extractWarranty(clean),
                             stockStatus = PriceExtractor.extractStock(clean),
-                            // Public channel preview quotes without cryptographic TDLib session are UNVERIFIED
                             verificationStatus = VerificationStatus.USER_SUPPLIED_UNVERIFIED,
                             riskLevel = if (price < 1.0 && targetQuery.contains("ChatGPT", ignoreCase = true)) RiskLevel.HIGH else RiskLevel.LOW,
                             captureMethod = "LIVE_TELEGRAM_PREVIEW",

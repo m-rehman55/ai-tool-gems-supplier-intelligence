@@ -65,6 +65,7 @@ class TelegramClientManager private constructor(private val context: Context) {
     var onConnectionStateListener: ((String) -> Unit)? = null
 
     private val botMessageListeners = ConcurrentHashMap<Long, (TdApi.Message) -> Unit>()
+    private val botUpdateListeners = ConcurrentHashMap<Long, (TdApi.Object) -> Unit>()
 
     private fun notifyState(state: TelegramAuthState, message: String) {
         currentAuthState = state
@@ -146,6 +147,13 @@ class TelegramClientManager private constructor(private val context: Context) {
             is TdApi.UpdateNewMessage -> {
                 val msg = update.message
                 botMessageListeners[msg.chatId]?.invoke(msg)
+                botUpdateListeners[msg.chatId]?.invoke(update)
+            }
+            is TdApi.UpdateMessageContent -> {
+                botUpdateListeners[update.chatId]?.invoke(update)
+            }
+            is TdApi.UpdateMessageEdited -> {
+                botUpdateListeners[update.chatId]?.invoke(update)
             }
         }
     }
@@ -253,7 +261,7 @@ class TelegramClientManager private constructor(private val context: Context) {
             "en", // systemLanguageCode
             "Android " + android.os.Build.MODEL, // deviceModel
             android.os.Build.VERSION.RELEASE, // systemVersion
-            "1.0.3" // applicationVersion
+            "1.0.4" // applicationVersion
         )
 
         client?.send(params) { result ->
@@ -446,6 +454,77 @@ class TelegramClientManager private constructor(private val context: Context) {
 
         onProgress("Bot inspection complete. Extracted ${results.size} offer(s).")
         results
+    }
+
+    fun registerBotUpdateListener(chatId: Long, listener: (TdApi.Object) -> Unit) {
+        botUpdateListeners[chatId] = listener
+    }
+
+    fun unregisterBotUpdateListener(chatId: Long) {
+        botUpdateListeners.remove(chatId)
+    }
+
+    suspend fun resolveBotChat(handle: String): TdApi.Chat? {
+        val currentClient = client ?: return null
+        val clean = handle.trim().removePrefix("@")
+        val res = suspendAsync<TdApi.Object> { cb ->
+            currentClient.send(TdApi.SearchPublicChat(clean), cb)
+        }
+        return if (res is TdApi.Chat) res else null
+    }
+
+    suspend fun sendBotTextMessage(chatId: Long, text: String): TdApi.Message? {
+        val currentClient = client ?: return null
+        val content = TdApi.InputMessageText().apply {
+            this.text = TdApi.FormattedText(text, emptyArray())
+        }
+        val sendReq = TdApi.SendMessage().apply {
+            this.chatId = chatId
+            this.inputMessageContent = content
+        }
+        val res = suspendAsync<TdApi.Object> { cb ->
+            currentClient.send(sendReq, cb)
+        }
+        return if (res is TdApi.Message) res else null
+    }
+
+    suspend fun sendBotCallbackQuery(chatId: Long, messageId: Long, data: String): TdApi.Object? {
+        val currentClient = client ?: return null
+        val payload = TdApi.CallbackQueryPayloadData(data.toByteArray(Charsets.UTF_8))
+        val req = TdApi.GetCallbackQueryAnswer(chatId, messageId, payload)
+        return suspendAsync<TdApi.Object> { cb ->
+            currentClient.send(req, cb)
+        }
+    }
+
+    suspend fun joinChatChannel(targetHandleOrUrl: String): Boolean {
+        val currentClient = client ?: return false
+        val clean = targetHandleOrUrl.trim()
+        val invitePrefix = "t.me/+"
+        val joinPrefix = "t.me/joinchat/"
+
+        return if (clean.contains(invitePrefix) || clean.contains(joinPrefix)) {
+            val link = clean.substringAfter("t.me/")
+            val res = suspendAsync<TdApi.Object> { cb ->
+                currentClient.send(TdApi.JoinChatByInviteLink(link), cb)
+            }
+            res is TdApi.Chat || res is TdApi.Ok
+        } else {
+            val handle = clean.substringAfter("t.me/").removePrefix("@")
+            val chat = resolveBotChat(handle) ?: return false
+            val res = suspendAsync<TdApi.Object> { cb ->
+                currentClient.send(TdApi.JoinChat(chat.id), cb)
+            }
+            res is TdApi.Ok
+        }
+    }
+
+    suspend fun fetchMessageSync(chatId: Long, messageId: Long): TdApi.Message? {
+        val currentClient = client ?: return null
+        val res = suspendAsync<TdApi.Object> { cb ->
+            currentClient.send(TdApi.GetMessage(chatId, messageId), cb)
+        }
+        return if (res is TdApi.Message) res else null
     }
 
     private suspend inline fun <reified T : TdApi.Object> suspendAsync(

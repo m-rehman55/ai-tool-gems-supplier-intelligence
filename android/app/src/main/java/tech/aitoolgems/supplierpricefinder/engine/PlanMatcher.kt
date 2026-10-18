@@ -12,6 +12,10 @@ object PlanMatcher {
             .trim()
     }
 
+    /**
+     * Parses duration/validity from raw text.
+     * FAILS TRUTHFULLY: Returns "UNKNOWN" if no explicit duration is stated.
+     */
     fun parseDuration(rawText: String): String {
         val t = rawText.lowercase(Locale.ROOT)
         if (t.contains("lifetime")) return "Lifetime"
@@ -31,12 +35,16 @@ object PlanMatcher {
         val dayMatch = "\\b(\\d+)\\s*(?:days?|d)\\b".toRegex().find(t)
         if (dayMatch != null) {
             val v = dayMatch.groupValues[1].toInt()
-            return "$v Days"
+            return "$v Day" + if (v > 1) "s" else ""
         }
 
-        return "1 Month"
+        return "UNKNOWN"
     }
 
+    /**
+     * Parses account access model from text.
+     * FAILS TRUTHFULLY: Returns UNKNOWN if unstated.
+     */
     fun parseAccessType(rawText: String): AccessType {
         val t = rawText.lowercase(Locale.ROOT)
         return when {
@@ -45,14 +53,40 @@ object PlanMatcher {
             t.contains("team") || t.contains("panel") || t.contains("admin") -> AccessType.TEAM
             t.contains("key") || t.contains("license") || t.contains("retail") -> AccessType.KEY
             t.contains("api") || t.contains("token") -> AccessType.API
-            t.contains("private") || t.contains("personal") || t.contains("email") || t.contains("password") -> AccessType.PRIVATE
-            else -> AccessType.PRIVATE // Default standard access if private tool
+            t.contains("private") || t.contains("personal") || t.contains("mail") || t.contains("email") -> AccessType.PRIVATE
+            else -> AccessType.UNKNOWN
+        }
+    }
+
+    /**
+     * Extracts known canonical tool name from line.
+     */
+    fun extractProductName(rawText: String): String {
+        val t = rawText.lowercase(Locale.ROOT)
+        return when {
+            t.contains("chatgpt") || t.contains("openai") || t.contains("gpt-4") -> "ChatGPT Plus"
+            t.contains("canva") -> "Canva Pro"
+            t.contains("gemini") -> "Google Gemini"
+            t.contains("claude") -> "Claude Pro"
+            t.contains("netflix") -> "Netflix Premium"
+            t.contains("midjourney") -> "Midjourney"
+            t.contains("capcut") -> "CapCut Pro"
+            t.contains("grammarly") -> "Grammarly Premium"
+            t.contains("prime video") || t.contains("amazon prime") -> "Amazon Prime"
+            t.contains("jetbrains") -> "JetBrains All Products"
+            t.contains("cursor") -> "Cursor AI"
+            t.contains("github copilot") || t.contains("copilot") -> "GitHub Copilot"
+            t.contains("freepik") -> "Freepik Premium"
+            t.contains("envato") -> "Envato Elements"
+            t.contains("runway") -> "Runway Gen-2"
+            t.contains("elevenlabs") -> "ElevenLabs"
+            else -> rawText.lines().firstOrNull()?.take(30)?.trim() ?: "Digital Tool"
         }
     }
 
     fun generateMatchingKey(productName: String, planName: String, duration: String, accessType: AccessType): String {
         val pSlug = normalizeString(productName).replace(" ", "_")
-        val plSlug = normalizeString(planName).replace(" ", "_")
+        val plSlug = normalizeString(planName).replace(" ", "_").take(40)
         val durSlug = normalizeString(duration).replace(" ", "_")
         val accSlug = accessType.name.lowercase(Locale.ROOT)
         return "${pSlug}__${plSlug}__${durSlug}__${accSlug}"

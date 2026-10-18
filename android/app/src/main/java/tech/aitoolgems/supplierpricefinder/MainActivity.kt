@@ -434,11 +434,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadSuppliersTab() {
         suppliersList.clear()
-        val all = database.getAllSuppliers(currentFilterSource)
+        val all = database.getAllSuppliers(currentFilterSource?.code)
         suppliersList.addAll(all)
         val counts = database.getSuppliersCountBySource()
-        val tgCount = counts[SupplierSource.TELEGRAM_DISCOVERY] ?: 0
-        val seedCount = counts[SupplierSource.SEED_DATA] ?: 0
+        val tgCount = counts[SupplierSource.TELEGRAM_DISCOVERY.code] ?: 0
+        val seedCount = counts[SupplierSource.SEED_DATA.code] ?: 0
         binding.tvCatalogCountSummary.text = "Suppliers: ${suppliersList.size} ($tgCount Telegram, $seedCount Seed)"
         binding.recyclerViewResults.adapter = SuppliersAdapter(suppliersList,
             onToggle = { supplier, isEnabled ->
@@ -938,13 +938,14 @@ class MainActivity : AppCompatActivity() {
             holder.tvName.text = supplier.canonicalName
             holder.tvHandle.text = supplier.primaryHandle
             val sourceLabel = when (supplier.source) {
-                SupplierSource.TELEGRAM_DISCOVERY -> "🤖 Telegram Discovered"
-                SupplierSource.SEED_DATA -> "📦 Seed Catalog"
-                SupplierSource.IMPORTED -> "📥 Imported Catalog"
+                SupplierSource.TELEGRAM_DISCOVERY.code -> "🤖 Telegram Discovered"
+                SupplierSource.SEED_DATA.code -> "📦 Seed Catalog"
+                SupplierSource.IMPORTED.code -> "📥 Imported Catalog"
+                else -> "🤖 Telegram Discovered"
             }
             holder.tvSource.text = sourceLabel
             holder.tvSource.setTextColor(
-                if (supplier.source == SupplierSource.TELEGRAM_DISCOVERY)
+                if (supplier.source == SupplierSource.TELEGRAM_DISCOVERY.code)
                     getColor(R.color.badge_verified_text)
                 else
                     getColor(R.color.accent)

@@ -67,7 +67,7 @@ class TelegramNativeIntelligenceTestSuite {
             primaryHandle = "@seed_demo_bot",
             allHandles = "@seed_demo_bot",
             entityType = "BOT",
-            source = SupplierSource.SEED_DATA,
+            source = SupplierSource.SEED_DATA.code,
             telegramChatId = null,
             lastSyncAt = null
         )
@@ -78,15 +78,15 @@ class TelegramNativeIntelligenceTestSuite {
             primaryHandle = "@ptsbd_bot",
             allHandles = "@ptsbd_bot",
             entityType = "BOT",
-            source = SupplierSource.TELEGRAM_DISCOVERY,
+            source = SupplierSource.TELEGRAM_DISCOVERY.code,
             telegramChatId = 987654321L,
             lastSyncAt = System.currentTimeMillis()
         )
 
-        assertEquals("Seed source must be SEED_DATA", SupplierSource.SEED_DATA, seedSupplier.source)
+        assertEquals("Seed source must be SEED_DATA", SupplierSource.SEED_DATA.code, seedSupplier.source)
         assertNull("Seed supplier cannot have live telegramChatId", seedSupplier.telegramChatId)
 
-        assertEquals("Live discovery must be TELEGRAM_DISCOVERY", SupplierSource.TELEGRAM_DISCOVERY, liveTgSupplier.source)
+        assertEquals("Live discovery must be TELEGRAM_DISCOVERY", SupplierSource.TELEGRAM_DISCOVERY.code, liveTgSupplier.source)
         assertNotNull("Live discovery must have telegramChatId", liveTgSupplier.telegramChatId)
         assertTrue("Live discovery must have valid lastSyncAt", (liveTgSupplier.lastSyncAt ?: 0) > 0)
     }

@@ -527,6 +527,17 @@ class TelegramClientManager private constructor(private val context: Context) {
         return if (res is TdApi.Message) res else null
     }
 
+    fun fetchMessageAsync(chatId: Long, messageId: Long, callback: (TdApi.Message?) -> Unit) {
+        val currentClient = client
+        if (currentClient == null) {
+            callback(null)
+            return
+        }
+        currentClient.send(TdApi.GetMessage(chatId, messageId)) { result ->
+            callback(if (result is TdApi.Message) result else null)
+        }
+    }
+
     private suspend inline fun <reified T : TdApi.Object> suspendAsync(
         crossinline block: (Client.ResultHandler) -> Unit
     ): T = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->

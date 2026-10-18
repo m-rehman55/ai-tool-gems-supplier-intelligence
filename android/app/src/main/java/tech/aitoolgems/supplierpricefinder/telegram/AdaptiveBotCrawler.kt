@@ -176,11 +176,12 @@ class AdaptiveBotCrawler(
                 break
             }
 
-            val fingerprint = currentMenu.computeFingerprint()
+            val activeMenu = currentMenu ?: break
+            val fingerprint = activeMenu.computeFingerprint()
             visitedMenuFingerprints.add(fingerprint)
 
             // Extract any direct price observations visible in the current menu text
-            val extractedHere = extractOffersFromMenu(currentMenu, supplier, targetProductQuery)
+            val extractedHere = extractOffersFromMenu(activeMenu, supplier, targetProductQuery)
             for (obs in extractedHere) {
                 if (offers.none { it.matchingKey == obs.matchingKey && it.supplierId == obs.supplierId }) {
                     offers.add(obs)
@@ -190,18 +191,18 @@ class AdaptiveBotCrawler(
             }
 
             // A. Check for Language Selection Screen
-            val languageButton = findLanguageSelectorButton(currentMenu)
+            val languageButton = findLanguageSelectorButton(activeMenu)
             if (languageButton != null) {
                 currentState = CrawlerState.LANGUAGE_SELECTION
                 listener?.onStateChanged(supplier.primaryHandle, currentState, "Selecting English language (${languageButton.text})...")
                 emitTimeline(languageButton.text, languageButton.type, "Auto-select English language", "EXECUTED")
                 actionCount++
-                currentMenu = executeButtonAction(chatId, currentMenu, languageButton) ?: break
+                currentMenu = executeButtonAction(chatId, activeMenu, languageButton) ?: break
                 continue
             }
 
             // B. Check for Membership Gate
-            val membershipGate = detectMembershipGate(currentMenu)
+            val membershipGate = detectMembershipGate(activeMenu)
             if (membershipGate != null) {
                 currentState = CrawlerState.MEMBERSHIP_GATE
                 listener?.onStateChanged(supplier.primaryHandle, currentState, "Membership gate detected: ${membershipGate.title}")
@@ -215,7 +216,7 @@ class AdaptiveBotCrawler(
                     title = "Group/Channel Join Required",
                     promptMessage = "Bot requires joining ${membershipGate.targetHandleOrUrl} to unlock its catalog. Approve join?",
                     targetHandleOrUrl = membershipGate.targetHandleOrUrl,
-                    rawEvidence = currentMenu.rawText.take(200)
+                    rawEvidence = activeMenu.rawText.take(200)
                 )
                 database.addManualReviewItem(reviewItem)
 
@@ -237,14 +238,14 @@ class AdaptiveBotCrawler(
                     telegramManager.joinChatChannel(membershipGate.targetHandleOrUrl)
 
                     // Find and click the verify button (e.g. "Joined", "Verify", "Done")
-                    val verifyBtn = currentMenu.buttons.flatten().firstOrNull {
+                    val verifyBtn = activeMenu.buttons.flatten().firstOrNull {
                         val t = it.text.lowercase(Locale.ROOT)
                         t.contains("joined") || t.contains("verify") || t.contains("check") || t.contains("done")
                     }
                     if (verifyBtn != null) {
                         emitTimeline(verifyBtn.text, verifyBtn.type, "Verify membership after join", "EXECUTED")
                         actionCount++
-                        currentMenu = executeButtonAction(chatId, currentMenu, verifyBtn) ?: break
+                        currentMenu = executeButtonAction(chatId, activeMenu, verifyBtn) ?: break
                         continue
                     }
                 } else {
@@ -255,7 +256,7 @@ class AdaptiveBotCrawler(
             }
 
             // C. Look for Catalog / Products / Store Entry Button
-            val catalogButton = findCatalogEntryButton(currentMenu, supplier.id, fingerprint)
+            val catalogButton = findCatalogEntryButton(activeMenu, supplier.id, fingerprint)
             if (catalogButton != null) {
                 val safety = SafetyBoundary.checkButtonSafety(
                     catalogButton.text,
@@ -274,7 +275,7 @@ class AdaptiveBotCrawler(
                         itemType = "AMBIGUOUS_CATALOG_ENTRY",
                         title = "Confirm Catalog Button",
                         promptMessage = "Does button '${catalogButton.text}' on ${supplier.canonicalName} open the catalog menu?",
-                        rawEvidence = currentMenu.rawText.take(150)
+                        rawEvidence = activeMenu.rawText.take(150)
                     )
                     database.addManualReviewItem(reviewItem)
 
@@ -306,13 +307,13 @@ class AdaptiveBotCrawler(
                 listener?.onStateChanged(supplier.primaryHandle, currentState, "Opening catalog (${catalogButton.text})...")
                 emitTimeline(catalogButton.text, catalogButton.type, "Open catalog entry", "EXECUTED")
                 actionCount++
-                breadcrumbStack.addLast(currentMenu)
-                currentMenu = executeButtonAction(chatId, currentMenu, catalogButton) ?: break
+                breadcrumbStack.addLast(activeMenu)
+                currentMenu = executeButtonAction(chatId, activeMenu, catalogButton) ?: break
                 continue
             }
 
             // D. Explore Product / Category Submenus and Multi-Variant Buttons
-            val navigableButtons = currentMenu.buttons.flatten().filter { btn ->
+            val navigableButtons = activeMenu.buttons.flatten().filter { btn ->
                 val safety = SafetyBoundary.checkButtonSafety(btn.text, btn.payload, btn.type, fingerprint)
                 safety.isSafe && !btn.text.contains("back", ignoreCase = true) && !btn.text.contains("main menu", ignoreCase = true)
             }
@@ -327,8 +328,8 @@ class AdaptiveBotCrawler(
                     emitTimeline(btn.text, btn.type, "Explore product/variant option", "EXECUTED")
                     actionCount++
 
-                    breadcrumbStack.addLast(currentMenu)
-                    val nextMenu = executeButtonAction(chatId, currentMenu, btn)
+                    breadcrumbStack.addLast(activeMenu)
+                    val nextMenu = executeButtonAction(chatId, activeMenu, btn)
 
                     if (nextMenu != null) {
                         val subOffers = extractOffersFromMenu(nextMenu, supplier, targetProductQuery)
@@ -379,13 +380,13 @@ class AdaptiveBotCrawler(
                 }
 
                 // Check for Pagination (Next Page / Page 2 / >>)
-                val nextPgBtn = findPaginationButton(currentMenu)
+                val nextPgBtn = findPaginationButton(activeMenu)
                 if (nextPgBtn != null) {
                     currentState = CrawlerState.PAGINATION
                     listener?.onStateChanged(supplier.primaryHandle, currentState, "Paginating: ${nextPgBtn.text}...")
                     emitTimeline(nextPgBtn.text, nextPgBtn.type, "Traverse to next catalog page", "PAGINATE")
                     actionCount++
-                    currentMenu = executeButtonAction(chatId, currentMenu, nextPgBtn) ?: break
+                    currentMenu = executeButtonAction(chatId, activeMenu, nextPgBtn) ?: break
                     continue
                 }
 
@@ -520,10 +521,11 @@ class AdaptiveBotCrawler(
                 }
                 is TdApi.UpdateMessageContent -> {
                     if (obj.chatId == chatId) {
-                        // Fetch latest message
-                        val msg = telegramManager.fetchMessageSync(chatId, obj.messageId)
-                        if (msg != null) {
-                            deferred.complete(parseTdMessageToMenu(msg))
+                        // Fetch latest message asynchronously
+                        telegramManager.fetchMessageAsync(chatId, obj.messageId) { msg ->
+                            if (msg != null) {
+                                deferred.complete(parseTdMessageToMenu(msg))
+                            }
                         }
                     }
                 }

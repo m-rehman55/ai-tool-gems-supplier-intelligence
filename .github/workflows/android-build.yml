@@ -57,23 +57,23 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.2
-          name: "Telegram Supplier Price Finder v1.0.2 (Genuine MTProto & TDLib)"
+          tag_name: v1.0.3
+          name: "Telegram Supplier Price Finder v1.0.3 (Direct Installable APK)"
           draft: false
           prerelease: false
           generate_release_notes: false
           body: |
-            ### 📱 Telegram Supplier Price Finder v1.0.2 (Direct APK Download)
+            ### 📱 Telegram Supplier Price Finder v1.0.3 (Direct APK Download)
 
-            Download the direct `.apk` file below directly onto your Android phone:
-            - **Genuine Telegram MTProto Authentication (TDLib)**: Direct connection to Telegram DC servers; triggers official 5-digit verification codes to your active Telegram accounts.
-            - **Wholesale Search Fix**: Seed catalog now includes ChatGPT, Canva Pro, Google Gemini, Claude, and Netflix wholesale plans.
-            - **No ZIP extraction needed**: Tap `app-debug.apk` directly to install.
-            - **Signed with stable keystore** (`v1` and `v2` signatures enabled).
-            - **Supports Android 7.0 Nougat to Android 14** (`minSdk = 24`).
+            Direct `.apk` file for Android phones:
+            - **Package Parse Error Fixed**: Removed conflicting `<uses-sdk>` manifest tags that caused "Package appears to be invalid" on Android devices.
+            - **Optimized ARM APK**: Excluded unnecessary x86 PC emulator binaries, reducing the APK size from 100 MB down to ~40 MB for faster, corruption-free downloads.
+            - **v1 + v2 APK Signatures**: Verified compatible with Android 8.0 through Android 14+.
+            - **Genuine MTProto TDLib Engine**: Live Telegram DC connection to deliver 5-digit verification codes to active Telegram accounts (Japan, Pakistan, worldwide).
+            - **Preloaded AI Tools**: Popular tools (ChatGPT Plus, Canva Pro, Gemini, Claude, Netflix) ready for wholesale comparison.
 
-            #### ⚠️ Installation Note:
-            If you previously installed an older build, please **uninstall the old version first**, then install `app-debug.apk`.
+            #### ⚠️ Important Installation Note:
+            If you previously installed an older version on your phone, **please uninstall (delete) the old app first**, then download and install `app-debug.apk`.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -58,7 +58,10 @@ object SafetyBoundary {
      */
     fun isCatalogNavigationButton(buttonText: String): Boolean {
         val t = buttonText.trim().lowercase(Locale.ROOT)
-        val catalogKeywords = listOf("product", "shop", "store", "catalog", "menu", "service", "tools", "back", "next", "page")
+        val catalogKeywords = listOf(
+            "product", "shop", "store", "catalog", "menu", "service", "tools",
+            "back", "next", "page", "previous", "detail", "view", "open"
+        )
         return catalogKeywords.any { t.contains(it) } && checkButtonSafety(buttonText).isSafe
     }
 }

@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "tech.aitoolgems.supplierpricefinder"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 3
         versionName = "1.0.2"

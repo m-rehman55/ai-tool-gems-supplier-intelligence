@@ -275,7 +275,7 @@ class TelegramClientManager private constructor(private val context: Context) {
             "en", // systemLanguageCode
             "Android " + android.os.Build.MODEL, // deviceModel
             android.os.Build.VERSION.RELEASE, // systemVersion
-            "1.0.6" // applicationVersion
+            "1.0.7" // applicationVersion
         )
 
         client?.send(params) { result ->

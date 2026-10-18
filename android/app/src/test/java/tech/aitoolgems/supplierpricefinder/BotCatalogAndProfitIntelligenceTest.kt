@@ -207,4 +207,90 @@ class BotCatalogAndProfitIntelligenceTest {
         assertTrue(quote.contains("Full Warranty (FW)"))
         assertTrue(quote.contains("Customer Price: Rs. 1,700 PKR"))
     }
+
+    @Test
+    fun testSupplierSourceSegregation() {
+        val tgBot = Supplier(
+            id = 101,
+            canonicalName = "Live Shop Bot",
+            primaryHandle = "@liveshop_bot",
+            allHandles = "@liveshop_bot",
+            source = SupplierSource.TELEGRAM_DISCOVERY.code
+        )
+        val seedBot = Supplier(
+            id = 102,
+            canonicalName = "Demo Bot",
+            primaryHandle = "@demo_bot",
+            allHandles = "@demo_bot",
+            source = SupplierSource.SEED_DATA.code
+        )
+
+        val observations = listOf(
+            PriceObservation(
+                id = 1,
+                supplierId = tgBot.id,
+                supplierName = tgBot.canonicalName,
+                supplierHandle = tgBot.primaryHandle,
+                productName = "ChatGPT Plus",
+                planName = "1 Month Private",
+                duration = "1 Month",
+                accessType = AccessType.PRIVATE,
+                matchingKey = "chatgpt__plus__1_month__private",
+                amount = 4.80,
+                currency = "USDT",
+                amountPkr = 1356.0,
+                originalRawText = "ChatGPT Plus 1M Private $4.80"
+            ),
+            PriceObservation(
+                id = 2,
+                supplierId = seedBot.id,
+                supplierName = seedBot.canonicalName,
+                supplierHandle = seedBot.primaryHandle,
+                productName = "ChatGPT Plus",
+                planName = "1 Month Private",
+                duration = "1 Month",
+                accessType = AccessType.PRIVATE,
+                matchingKey = "chatgpt__plus__1_month__private",
+                amount = 4.90,
+                currency = "USDT",
+                amountPkr = 1384.0,
+                originalRawText = "ChatGPT Plus 1M Private $4.90"
+            )
+        )
+
+        // Filter by TELEGRAM_DISCOVERY
+        val tgOffers = observations.filter { it.supplierId == tgBot.id }
+        assertEquals(1, tgOffers.size)
+        assertEquals("@liveshop_bot", tgOffers.first().supplierHandle)
+
+        // Filter by SEED_DATA
+        val seedOffers = observations.filter { it.supplierId == seedBot.id }
+        assertEquals(1, seedOffers.size)
+        assertEquals("@demo_bot", seedOffers.first().supplierHandle)
+    }
+
+    @Test
+    fun testPriceExtractorDecimalsAndCurrencies() {
+        val (p1, c1) = tech.aitoolgems.supplierpricefinder.engine.PriceExtractor.extractPrice("Canva Pro 1 Year: $14.50 USDT")
+        assertEquals(14.50, p1 ?: 0.0, 0.001)
+        assertEquals("USDT", c1)
+
+        val (p2, c2) = tech.aitoolgems.supplierpricefinder.engine.PriceExtractor.extractPrice("ChatGPT Plus: Rs. 2850")
+        assertEquals(2850.0, p2 ?: 0.0, 0.001)
+        assertEquals("PKR", c2)
+
+        val (p3, c3) = tech.aitoolgems.supplierpricefinder.engine.PriceExtractor.extractPrice("CapCut Pro 1 Month: 5$")
+        assertEquals(5.0, p3 ?: 0.0, 0.001)
+        assertEquals("USD", c3)
+    }
+
+    @Test
+    fun testZeroOrNegativePriceSafety() {
+        // Referral spam must be ignored
+        val (p1, _) = tech.aitoolgems.supplierpricefinder.engine.PriceExtractor.extractPrice("Earn $5 in your wallet by inviting friends!")
+        assertNull("Referral reward text must not be extracted as product price", p1)
+
+        val (p2, _) = tech.aitoolgems.supplierpricefinder.engine.PriceExtractor.extractPrice("Referral balance giveaway $10")
+        assertNull("Giveaway bonus text must not be extracted as product price", p2)
+    }
 }

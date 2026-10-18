@@ -1,303 +1,311 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/primary_dark"
-    android:orientation="vertical"
-    android:padding="16dp">
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp">
 
-    <!-- Header & Identity -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tvBotCatalogTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PT Store BD"
-                android:textColor="@color/primary"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvBotCatalogHandle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@ptstorebd_bot"
-                android:textColor="@color/accent"
-                android:textSize="13sp" />
-
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvBotCatalogBadge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/badge_verified"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
-            android:text="🤖 TG BOT"
-            android:textColor="@color/badge_verified_text"
-            android:textSize="11sp"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
-    <!-- Bot Catalog Overview Card -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="10dp"
-        app:cardBackgroundColor="@color/card_background"
-        app:cardCornerRadius="10dp"
-        app:cardElevation="2dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Total Tools"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp" />
-
-                    <TextView
-                        android:id="@+id/tvBotTotalTools"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="14 Active Tools"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1.5"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Wholesale Price Range"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp" />
-
-                    <TextView
-                        android:id="@+id/tvBotPriceRange"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="$1.20 - $16.00 / Rs. 340 - Rs. 4,500"
-                        android:textColor="@color/winner_gold"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="8dp"
-                android:background="@color/divider" />
-
-            <TextView
-                android:id="@+id/tvBotMemoryStatus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="🧠 AI Memory: Active menu structure learned | Ready for live crawler."
-                android:textColor="@color/accent"
-                android:textSize="11sp" />
-
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
-    <!-- Resale Margin Calculator Control for Pakistan Market -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        app:cardBackgroundColor="@color/card_elevated"
-        app:cardCornerRadius="8dp">
-
+        <!-- Header & Identity -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="8dp">
+            android:orientation="horizontal">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="🇵🇰 Resale Margin:"
-                android:textColor="@color/primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:orientation="vertical">
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupResaleMargin"
+                <TextView
+                    android:id="@+id/tvBotCatalogTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PT Store BD"
+                    android:textColor="@color/primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvBotCatalogHandle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@ptstorebd_bot"
+                    android:textColor="@color/accent"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvBotCatalogBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipMargin20"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:text="+20%"
-                    android:textColor="@color/text_primary"
-                    android:textSize="10sp"
-                    app:chipBackgroundColor="@color/card_background"
-                    app:chipStrokeColor="@color/divider"
-                    app:chipStrokeWidth="1dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipMargin30"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:checked="true"
-                    android:text="+30%"
-                    android:textColor="@color/text_primary"
-                    android:textSize="10sp"
-                    app:chipBackgroundColor="@color/card_background"
-                    app:chipStrokeColor="@color/divider"
-                    app:chipStrokeWidth="1dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipMargin500Pkr"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:text="+Rs.500"
-                    android:textColor="@color/text_primary"
-                    android:textSize="10sp"
-                    app:chipBackgroundColor="@color/card_background"
-                    app:chipStrokeColor="@color/divider"
-                    app:chipStrokeWidth="1dp" />
-
-            </com.google.android.material.chip.ChipGroup>
+                android:background="@color/badge_verified"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="🤖 TG BOT"
+                android:textColor="@color/badge_verified_text"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
-    </androidx.cardview.widget.CardView>
-
-    <!-- Search / Filter input within this bot -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        app:boxBackgroundColor="@color/card_background"
-        app:boxBackgroundMode="outline"
-        app:boxStrokeColor="@color/primary"
-        app:hintTextColor="@color/primary">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etSearchBotProducts"
+        <!-- Bot Catalog Overview Card -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search tool inside this bot (e.g. Canva, ChatGPT, CapCut)..."
-            android:imeOptions="actionDone"
-            android:inputType="text"
-            android:textColor="@color/text_primary"
-            android:textSize="13sp" />
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="10dp"
+            app:cardBackgroundColor="@color/card_elevated"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="2dp">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
 
-    <!-- Empty State -->
-    <TextView
-        android:id="@+id/tvBotEmptyProducts"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="20dp"
-        android:gravity="center"
-        android:text="No tools harvested from this bot yet.\nTap 'Crawl Bot Now' below to extract its full live catalog."
-        android:textColor="@color/text_secondary"
-        android:textSize="13sp"
-        android:visibility="gone" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-    <!-- Product List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvBotProducts"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginBottom="12dp"
-        android:clipToPadding="false" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-    <!-- Footer Action Buttons -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Tools"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnExportFullBotCatalog"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
+                        <TextView
+                            android:id="@+id/tvBotTotalTools"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="14 Active Tools"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.5"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Wholesale Price Range"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tvBotPriceRange"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="$1.20 - $16.00 / Rs. 340 - Rs. 4,500"
+                            android:textColor="@color/winner_gold"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="8dp"
+                    android:background="@color/divider" />
+
+                <TextView
+                    android:id="@+id/tvBotMemoryStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🧠 AI Memory: Active menu structure learned | Ready for live crawler."
+                    android:textColor="@color/accent"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Resale Margin Calculator Control for Pakistan Market -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="6dp"
-            android:layout_weight="1"
-            android:text="📋 Copy Catalog"
-            android:textColor="@color/accent"
-            android:textSize="11sp"
-            app:strokeColor="@color/accent" />
+            android:layout_marginBottom="10dp"
+            app:cardBackgroundColor="@color/card_elevated"
+            app:cardCornerRadius="8dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCrawlBotNow"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="6dp"
-            android:layout_weight="1"
-            android:text="⚡ Crawl Bot"
-            android:textColor="@color/primary_dark"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            app:backgroundTint="@color/primary" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="8dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCloseBotCatalog"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🇵🇰 Resale Margin:"
+                    android:textColor="@color/primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupResaleMargin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipMargin20"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:text="+20%"
+                        android:textColor="@color/text_primary"
+                        android:textSize="10sp"
+                        app:chipBackgroundColor="@color/card_background"
+                        app:chipStrokeColor="@color/divider"
+                        app:chipStrokeWidth="1dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipMargin30"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:checked="true"
+                        android:text="+30%"
+                        android:textColor="@color/text_primary"
+                        android:textSize="10sp"
+                        app:chipBackgroundColor="@color/card_background"
+                        app:chipStrokeColor="@color/divider"
+                        app:chipStrokeWidth="1dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipMargin500Pkr"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:text="+Rs.500"
+                        android:textColor="@color/text_primary"
+                        android:textSize="10sp"
+                        app:chipBackgroundColor="@color/card_background"
+                        app:chipStrokeColor="@color/divider"
+                        app:chipStrokeWidth="1dp" />
+
+                </com.google.android.material.chip.ChipGroup>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Search / Filter input within this bot -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Close"
+            android:layout_marginBottom="8dp"
+            app:boxBackgroundColor="@color/card_elevated"
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/primary"
+            app:hintTextColor="@color/primary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSearchBotProducts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search tool inside this bot (e.g. Canva, ChatGPT, CapCut)..."
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Empty State -->
+        <TextView
+            android:id="@+id/tvBotEmptyProducts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="20dp"
+            android:gravity="center"
+            android:text="No tools harvested from this bot yet.\nTap 'Crawl Bot Now' below to extract its full live catalog."
             android:textColor="@color/text_secondary"
-            android:textSize="11sp" />
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <!-- Product List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvBotProducts"
+            android:layout_width="match_parent"
+            android:layout_height="260dp"
+            android:layout_marginBottom="12dp"
+            android:clipToPadding="false" />
+
+        <!-- Footer Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnExportFullBotCatalog"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:text="📋 Copy Catalog"
+                android:textColor="@color/accent"
+                android:textSize="11sp"
+                app:strokeColor="@color/accent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCrawlBotNow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:text="⚡ Crawl Bot"
+                android:textColor="@color/primary_dark"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCloseBotCatalog"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Close"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</LinearLayout>
+</androidx.cardview.widget.CardView>

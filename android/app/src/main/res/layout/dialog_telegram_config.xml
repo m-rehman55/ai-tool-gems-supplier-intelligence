@@ -1,103 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="20dp">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Telegram MTProto Authorization"
-        android:textColor="@color/primary"
-        android:textSize="18sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Credentials are encrypted in your phone's Android Keystore and never transmitted to external servers."
-        android:textColor="@color/text_secondary"
-        android:textSize="12sp" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        app:boxBackgroundMode="outline">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etApiId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Telegram API ID"
-            android:inputType="number" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:boxBackgroundMode="outline">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etApiHash"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Telegram API Hash"
-            android:inputType="textPassword" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilPhoneNumber"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:boxBackgroundMode="outline"
-        app:helperText="All worldwide country codes supported: Japan (+81), USA (+1), UK (+44), PK (+92), etc."
-        app:helperTextEnabled="true">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etPhoneNumber"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="International Phone (e.g. +819012345678, +14155552671)"
-            android:inputType="phone" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnRequestOtp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Request Telegram Login Code (OTP)"
-        android:backgroundTint="@color/primary"
-        android:textColor="@color/white" />
+    android:fillViewport="true">
 
     <LinearLayout
-        android:id="@+id/layoutOtpVerification"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone"
-        android:layout_marginTop="8dp">
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Telegram MTProto Authorization"
+            android:textColor="@color/primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Credentials are encrypted in your phone's Android Keystore and never transmitted to external servers."
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:boxBackgroundMode="outline"
-            app:helperText="Check your official Telegram app under 'Telegram' chat">
+            android:layout_marginTop="12dp"
+            app:boxBackgroundMode="outline">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etOtpCode"
+                android:id="@+id/etApiId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter 5-digit Telegram Code (OTP)"
+                android:hint="Telegram API ID"
                 android:inputType="number" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -106,27 +46,94 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            app:boxBackgroundMode="outline"
-            app:helperText="Leave blank if 2FA password is not set on your account">
+            app:boxBackgroundMode="outline">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTwoStepPassword"
+                android:id="@+id/etApiHash"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="2FA Password (Optional)"
+                android:hint="Telegram API Hash"
                 android:inputType="textPassword" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPhoneNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:boxBackgroundMode="outline"
+            app:helperText="All worldwide country codes supported: Japan (+81), USA (+1), UK (+44), PK (+92), etc."
+            app:helperTextEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPhoneNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="International Phone (e.g. +819012345678, +14155552671)"
+                android:inputType="phone" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRequestOtp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Request Telegram Login Code (OTP)"
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/white" />
+
+        <LinearLayout
+            android:id="@+id/layoutOtpVerification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="outline"
+                app:helperText="Check your official Telegram app under 'Telegram' chat">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etOtpCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter 5-digit Telegram Code (OTP)"
+                    android:inputType="number" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:boxBackgroundMode="outline"
+                app:helperText="Leave blank if 2FA password is not set on your account">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etTwoStepPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="2FA Password (Optional)"
+                    android:inputType="textPassword" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvTelegramStatusMsg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="🔒 Note: Telegram login sends an official OTP inside your Telegram app (not SMS). If in Pakistan or restricted region, please use a VPN."
+            android:textColor="@color/accent"
+            android:textSize="11sp" />
+
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvTelegramStatusMsg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="🔒 Note: Telegram login sends an official OTP inside your Telegram app (not SMS). If in Pakistan or restricted region, please use a VPN."
-        android:textColor="@color/primary_dark"
-        android:textSize="11sp" />
-
-</LinearLayout>
+</ScrollView>

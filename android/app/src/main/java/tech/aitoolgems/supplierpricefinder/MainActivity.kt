@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     2 -> { // Supplier Bots Directory
                         binding.cardSearchInput.visibility = View.GONE
-                        binding.scrollFilters.visibility = View.GONE
+                        binding.scrollFilters.visibility = View.VISIBLE
                         binding.cardCheapestVerified.visibility = View.GONE
                         binding.layoutCatalogActions.visibility = View.VISIBLE
                         loadSuppliersTab()
@@ -220,10 +220,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun filterAndDisplayAllTools() {
-        val filtered = if (currentFilterAccess != null) {
-            allToolsCatalogList.filter { it.accessType == currentFilterAccess }
-        } else {
-            allToolsCatalogList
+        var filtered = allToolsCatalogList.toList()
+        if (currentFilterAccess != null) {
+            filtered = filtered.filter { it.accessType == currentFilterAccess }
+        }
+        if (currentFilterSource != null) {
+            val matchingSupplierIds = database.getAllSuppliers(currentFilterSource!!.code).map { it.id }.toSet()
+            filtered = filtered.filter { matchingSupplierIds.contains(it.supplierId) }
         }
         binding.recyclerViewResults.adapter = AllToolsAdapter(filtered)
     }
@@ -366,10 +369,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun filterAndDisplayResults() {
-        val filtered = if (currentFilterAccess != null) {
-            observationsList.filter { it.accessType == currentFilterAccess }
-        } else {
-            observationsList
+        var filtered = observationsList.toList()
+        if (currentFilterAccess != null) {
+            filtered = filtered.filter { it.accessType == currentFilterAccess }
+        }
+        if (currentFilterSource != null) {
+            val matchingSupplierIds = database.getAllSuppliers(currentFilterSource!!.code).map { it.id }.toSet()
+            filtered = filtered.filter { matchingSupplierIds.contains(it.supplierId) }
         }
 
         // Evaluate Winner strictly under Rule 9
@@ -1087,6 +1093,7 @@ class MainActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setView(view)
             .create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         btnExport.setOnClickListener {
             copyFullBotCatalogToClipboard(supplier, summary, currentMarginPercent, currentFixedMarkup)
@@ -1184,6 +1191,7 @@ class MainActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setView(view)
             .create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         btnShare.setOnClickListener {
             val calc = ProfitCalculation(obs.amountPkr, obs.amount, marginPct, fixedMarkup)

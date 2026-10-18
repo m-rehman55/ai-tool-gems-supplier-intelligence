@@ -57,21 +57,23 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.6
-          name: "Telegram Supplier Price Finder v1.0.6 (Bot Catalog Intelligence & Resale Margin Calculator)"
+          tag_name: v1.0.7
+          name: "Telegram Supplier Price Finder v1.0.7 (Executive Production Release — Master UI & Intelligence Polish)"
           draft: false
           prerelease: false
           generate_release_notes: false
           body: |
-            ### 📱 Telegram Supplier Price Finder v1.0.6 (Direct APK Download)
+            ### 📱 Telegram Supplier Price Finder v1.0.7 (Executive Production Release)
 
             Direct `.apk` file for Android phones with Advanced Supplier Intelligence (SI / AI) & Autonomous Catalog Extraction:
             - **Per-Bot Product Portfolio & Catalog Viewer**: Tap **📦 Catalog** on any supplier bot to inspect all harvested tools, duration, access model, stock, and warranty.
             - **🇵🇰 Pakistan Resale Profit Margin Calculator**: Automatically calculates Pakistani retail selling prices with custom profit margins (+20%, +30%, or +Rs. 500 fixed markup) auto-rounded to nearest Rs. 50.
             - **1-Click WhatsApp Customer Quotations**: Instant copy formatted, professional quotations ready to dispatch to Pakistani buyers on WhatsApp or paste into `aitoolgems.tech`.
-            - **Price Fluctuation History & Market Trends**: Tracks price drops and increases across all bots over time.
+            - **Comprehensive Source-Based Filtering**: Filter results and wholesale catalog by `🤖 TG Discovered` vs `📦 Seed / Demo` across all tabs.
+            - **Aesthetic & Dialog Polish**: Transparent dialog window backgrounds with 16dp rounded corners, high-contrast dark theme, and keyboard-adaptive scrollviews.
             - **Telegram-Native Discovery**: Discovers live shop bots directly from your authenticated Telegram account dialogs (`ChatTypePrivate` + `UserTypeBot`).
             - **Active Menu Resumption**: Reuses active keyboards without sending redundant `/start` to existing bots.
+            - **Price Fluctuation History & Market Trends**: Tracks price drops and increases across all bots over time.
             - **Search Policies**: Supports `⚡ Fast Lookup` and `🌐 Exhaustive Crawl`.
             - **Optimized ARM APK**: Pre-packaged with native TDLib binaries for arm64-v8a and armeabi-v7a.
 

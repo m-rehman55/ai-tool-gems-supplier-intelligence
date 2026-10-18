@@ -1,252 +1,267 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/primary_dark"
-    android:orientation="vertical"
-    android:padding="16dp">
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp">
 
-    <!-- Header -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="🇵🇰 Pakistan Resale Profit Calculator"
-        android:textColor="@color/primary"
-        android:textSize="17sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/tvCalcProductHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="ChatGPT Plus (1 Month Private)"
-        android:textColor="@color/text_secondary"
-        android:textSize="12sp" />
-
-    <!-- Wholesale Cost Card -->
-    <androidx.cardview.widget.CardView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        app:cardBackgroundColor="@color/card_background"
-        app:cardCornerRadius="8dp">
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="16dp">
 
+            <!-- Header -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Wholesale Bot Cost"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/tvCalcWholesaleCost"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="$4.80 USDT (~Rs. 1,356 PKR)"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
+                android:text="🇵🇰 Pakistan Resale Profit Calculator"
+                android:textColor="@color/primary"
+                android:textSize="17sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvCalcSupplierHandle"
+                android:id="@+id/tvCalcProductHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Supplier Bot: @getdigitaltools_bot"
-                android:textColor="@color/accent"
-                android:textSize="11sp" />
+                android:text="ChatGPT Plus (1 Month Private)"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
 
-        </LinearLayout>
+            <!-- Wholesale Cost Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                app:cardBackgroundColor="@color/card_elevated"
+                app:cardCornerRadius="8dp">
 
-    </androidx.cardview.widget.CardView>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
 
-    <!-- Margin Configuration -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select Profit Margin:"
-        android:textColor="@color/text_primary"
-        android:textSize="12sp"
-        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wholesale Bot Cost"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupCalcMargin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        app:singleSelection="true">
+                    <TextView
+                        android:id="@+id/tvCalcWholesaleCost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="$4.80 USDT (~Rs. 1,356 PKR)"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipCalcMargin15"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:text="+15%"
-            android:textColor="@color/text_primary"
-            android:textSize="11sp"
-            app:chipBackgroundColor="@color/card_background"
-            app:chipStrokeColor="@color/divider"
-            app:chipStrokeWidth="1dp" />
+                    <TextView
+                        android:id="@+id/tvCalcSupplierHandle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Supplier Bot: @getdigitaltools_bot"
+                        android:textColor="@color/accent"
+                        android:textSize="11sp" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipCalcMargin25"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:checked="true"
-            android:text="+25%"
-            android:textColor="@color/text_primary"
-            android:textSize="11sp"
-            app:chipBackgroundColor="@color/card_background"
-            app:chipStrokeColor="@color/divider"
-            app:chipStrokeWidth="1dp" />
+                </LinearLayout>
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipCalcMargin35"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:text="+35%"
-            android:textColor="@color/text_primary"
-            android:textSize="11sp"
-            app:chipBackgroundColor="@color/card_background"
-            app:chipStrokeColor="@color/divider"
-            app:chipStrokeWidth="1dp" />
+            </androidx.cardview.widget.CardView>
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipCalcMargin500"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:text="+Rs. 500 Fixed"
-            android:textColor="@color/text_primary"
-            android:textSize="11sp"
-            app:chipBackgroundColor="@color/card_background"
-            app:chipStrokeColor="@color/divider"
-            app:chipStrokeWidth="1dp" />
+            <!-- Margin Configuration -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Profit Margin:"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-    </com.google.android.material.chip.ChipGroup>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupCalcMargin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:singleSelection="true">
 
-    <!-- Resale & Net Profit Output Card -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="12dp"
-        app:cardBackgroundColor="@color/card_elevated"
-        app:cardCornerRadius="8dp">
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCalcMargin15"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="+15%"
+                    android:textColor="@color/text_primary"
+                    android:textSize="11sp"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp">
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCalcMargin25"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:checked="true"
+                    android:text="+25%"
+                    android:textColor="@color/text_primary"
+                    android:textSize="11sp"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
 
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCalcMargin35"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="+35%"
+                    android:textColor="@color/text_primary"
+                    android:textSize="11sp"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCalcMargin500"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="+Rs. 500 Fixed"
+                    android:textColor="@color/text_primary"
+                    android:textSize="11sp"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- Resale & Net Profit Output Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="@color/card_elevated"
+                app:cardCornerRadius="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Selling Price (PKR)"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvCalcRetailPricePkr"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Rs. 1,850 PKR"
+                                android:textColor="@color/primary"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Your Net Profit"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvCalcNetProfitPkr"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Rs. 494 PKR (36%)"
+                                android:textColor="@color/winner_gold"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="💡 Prices auto-rounded to nearest Rs. 50 standard commercial tier for Pakistan."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Actions -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <LinearLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCalcShareWhatsApp"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:text="💬 WhatsApp Quote"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/primary" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Selling Price (PKR)"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp" />
-
-                    <TextView
-                        android:id="@+id/tvCalcRetailPricePkr"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Rs. 1,850 PKR"
-                        android:textColor="@color/primary"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCalcClose"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Your Net Profit"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp" />
-
-                    <TextView
-                        android:id="@+id/tvCalcNetProfitPkr"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Rs. 494 PKR (36%)"
-                        android:textColor="@color/winner_gold"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
+                    android:text="Close"
+                    android:textColor="@color/text_secondary" />
 
             </LinearLayout>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="💡 Prices auto-rounded to nearest Rs. 50 standard commercial tier for Pakistan."
-                android:textColor="@color/text_secondary"
-                android:textSize="10sp" />
-
         </LinearLayout>
 
-    </androidx.cardview.widget.CardView>
+    </ScrollView>
 
-    <!-- Actions -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCalcShareWhatsApp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:text="💬 WhatsApp Quote"
-            android:textColor="@color/primary_dark"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            app:backgroundTint="@color/primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCalcClose"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Close"
-            android:textColor="@color/text_secondary" />
-
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

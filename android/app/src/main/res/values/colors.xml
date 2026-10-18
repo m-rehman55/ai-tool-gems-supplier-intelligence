@@ -13,5 +13,6 @@
     <color name="badge_unverified_text">#E65100</color>
     <color name="badge_risk">#FFEBEE</color>
     <color name="badge_risk_text">#C62828</color>
+    <color name="white">#FFFFFF</color>
     <color name="divider">#EEEEEE</color>
 </resources>

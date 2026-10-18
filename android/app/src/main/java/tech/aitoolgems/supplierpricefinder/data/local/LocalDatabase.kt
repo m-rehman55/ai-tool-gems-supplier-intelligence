@@ -10,7 +10,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
 
     companion object {
         const val DATABASE_NAME = "supplier_price_finder.db"
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
 
         const val TABLE_SUPPLIERS = "suppliers"
         const val TABLE_OBSERVATIONS = "price_observations"
@@ -60,6 +60,10 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             )
         """.trimIndent())
 
+        seedInitialData(db)
+    }
+
+    private fun seedInitialData(db: SQLiteDatabase) {
         // Prepopulate canonical bots
         for (sup in SeedSuppliers.CANONICAL_BOTS) {
             val cv = ContentValues().apply {
@@ -75,7 +79,47 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
                 put("risk_flags", sup.riskFlags)
                 put("notes", sup.notes)
             }
-            db.insert(TABLE_SUPPLIERS, null, cv)
+            db.insertWithOnConflict(TABLE_SUPPLIERS, null, cv, SQLiteDatabase.CONFLICT_IGNORE)
+        }
+
+        // Prepopulate verified wholesale price catalog observations
+        for (obs in SeedObservations.CANONICAL_OBSERVATIONS) {
+            val cv = ContentValues().apply {
+                put("supplier_id", obs.supplierId)
+                put("supplier_name", obs.supplierName)
+                put("supplier_handle", obs.supplierHandle)
+                put("product_name", obs.productName)
+                put("plan_name", obs.planName)
+                put("duration", obs.duration)
+                put("access_type", obs.accessType.name)
+                put("matching_key", obs.matchingKey)
+                put("amount", obs.amount)
+                put("currency", obs.currency)
+                put("amount_pkr", obs.amountPkr)
+                put("warranty", obs.warranty)
+                put("stock_status", obs.stockStatus)
+                put("verification_status", obs.verificationStatus.name)
+                put("risk_level", obs.riskLevel.name)
+                put("capture_method", obs.captureMethod)
+                put("original_raw_text", obs.originalRawText)
+                put("source_url", obs.sourceUrl)
+                put("observed_at", obs.observedAt)
+            }
+            db.insert(TABLE_OBSERVATIONS, null, cv)
+        }
+    }
+
+    fun ensureInitialData() {
+        val db = writableDatabase
+        val cursor = db.rawQuery("SELECT COUNT(*) FROM $TABLE_OBSERVATIONS", null)
+        var count = 0
+        cursor.use {
+            if (it.moveToFirst()) {
+                count = it.getInt(0)
+            }
+        }
+        if (count == 0) {
+            seedInitialData(db)
         }
     }
 
@@ -151,38 +195,84 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
         val q = query.lowercase().trim()
         val list = mutableListOf<PriceObservation>()
         val db = readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT * FROM $TABLE_OBSERVATIONS WHERE lower(product_name) LIKE ? OR lower(matching_key) LIKE ? ORDER BY amount_pkr ASC",
-            arrayOf("%$q%", "%$q%")
-        )
-        cursor.use { c ->
-            while (c.moveToNext()) {
-                list.add(
-                    PriceObservation(
-                        id = c.getLong(c.getColumnIndexOrThrow("id")),
-                        supplierId = c.getLong(c.getColumnIndexOrThrow("supplier_id")),
-                        supplierName = c.getString(c.getColumnIndexOrThrow("supplier_name")),
-                        supplierHandle = c.getString(c.getColumnIndexOrThrow("supplier_handle")),
-                        productName = c.getString(c.getColumnIndexOrThrow("product_name")),
-                        planName = c.getString(c.getColumnIndexOrThrow("plan_name")),
-                        duration = c.getString(c.getColumnIndexOrThrow("duration")),
-                        accessType = AccessType.valueOf(c.getString(c.getColumnIndexOrThrow("access_type"))),
-                        matchingKey = c.getString(c.getColumnIndexOrThrow("matching_key")),
-                        amount = c.getDouble(c.getColumnIndexOrThrow("amount")),
-                        currency = c.getString(c.getColumnIndexOrThrow("currency")),
-                        amountPkr = c.getDouble(c.getColumnIndexOrThrow("amount_pkr")),
-                        warranty = c.getString(c.getColumnIndexOrThrow("warranty")) ?: "Not Stated",
-                        stockStatus = c.getString(c.getColumnIndexOrThrow("stock_status")) ?: "Available",
-                        verificationStatus = VerificationStatus.valueOf(c.getString(c.getColumnIndexOrThrow("verification_status"))),
-                        riskLevel = RiskLevel.valueOf(c.getString(c.getColumnIndexOrThrow("risk_level"))),
-                        captureMethod = c.getString(c.getColumnIndexOrThrow("capture_method")) ?: "ANDROID_BOT_SCANNER",
-                        originalRawText = c.getString(c.getColumnIndexOrThrow("original_raw_text")),
-                        sourceUrl = c.getString(c.getColumnIndexOrThrow("source_url")),
-                        observedAt = c.getLong(c.getColumnIndexOrThrow("observed_at"))
-                    )
+        val cursor = if (q.isEmpty()) {
+            db.rawQuery("SELECT * FROM $TABLE_OBSERVATIONS ORDER BY amount_pkr ASC", null)
+        } else {
+            val terms = q.split("\\s+".toRegex()).filter { it.length > 1 }
+            if (terms.isEmpty()) {
+                db.rawQuery(
+                    "SELECT * FROM $TABLE_OBSERVATIONS WHERE lower(product_name) LIKE ? OR lower(plan_name) LIKE ? OR lower(matching_key) LIKE ? OR lower(original_raw_text) LIKE ? ORDER BY amount_pkr ASC",
+                    arrayOf("%$q%", "%$q%", "%$q%", "%$q%")
+                )
+            } else {
+                val whereClauses = terms.map {
+                    "(lower(product_name) LIKE ? OR lower(plan_name) LIKE ? OR lower(matching_key) LIKE ? OR lower(original_raw_text) LIKE ?)"
+                }.joinToString(" OR ")
+                val args = terms.flatMap { listOf("%$it%", "%$it%", "%$it%", "%$it%") }.toTypedArray()
+                db.rawQuery(
+                    "SELECT * FROM $TABLE_OBSERVATIONS WHERE $whereClauses ORDER BY amount_pkr ASC",
+                    args
                 )
             }
         }
+        cursor.use { c ->
+            while (c.moveToNext()) {
+                list.add(cursorToObservation(c))
+            }
+        }
         return list
+    }
+
+    fun getObservationsForSupplierAndQuery(supplierId: Long, query: String): List<PriceObservation> {
+        val q = query.lowercase().trim()
+        val list = mutableListOf<PriceObservation>()
+        val db = readableDatabase
+        val terms = q.split("\\s+".toRegex()).filter { it.length > 1 }
+        val cursor = if (terms.isEmpty()) {
+            db.rawQuery(
+                "SELECT * FROM $TABLE_OBSERVATIONS WHERE supplier_id = ? AND (lower(product_name) LIKE ? OR lower(plan_name) LIKE ? OR lower(matching_key) LIKE ? OR lower(original_raw_text) LIKE ?) ORDER BY amount_pkr ASC",
+                arrayOf(supplierId.toString(), "%$q%", "%$q%", "%$q%", "%$q%")
+            )
+        } else {
+            val whereClauses = terms.map {
+                "(lower(product_name) LIKE ? OR lower(plan_name) LIKE ? OR lower(matching_key) LIKE ? OR lower(original_raw_text) LIKE ?)"
+            }.joinToString(" OR ")
+            val args = (listOf(supplierId.toString()) + terms.flatMap { listOf("%$it%", "%$it%", "%$it%", "%$it%") }).toTypedArray()
+            db.rawQuery(
+                "SELECT * FROM $TABLE_OBSERVATIONS WHERE supplier_id = ? AND ($whereClauses) ORDER BY amount_pkr ASC",
+                args
+            )
+        }
+        cursor.use { c ->
+            while (c.moveToNext()) {
+                list.add(cursorToObservation(c))
+            }
+        }
+        return list
+    }
+
+    private fun cursorToObservation(c: android.database.Cursor): PriceObservation {
+        return PriceObservation(
+            id = c.getLong(c.getColumnIndexOrThrow("id")),
+            supplierId = c.getLong(c.getColumnIndexOrThrow("supplier_id")),
+            supplierName = c.getString(c.getColumnIndexOrThrow("supplier_name")),
+            supplierHandle = c.getString(c.getColumnIndexOrThrow("supplier_handle")),
+            productName = c.getString(c.getColumnIndexOrThrow("product_name")),
+            planName = c.getString(c.getColumnIndexOrThrow("plan_name")),
+            duration = c.getString(c.getColumnIndexOrThrow("duration")),
+            accessType = AccessType.valueOf(c.getString(c.getColumnIndexOrThrow("access_type"))),
+            matchingKey = c.getString(c.getColumnIndexOrThrow("matching_key")),
+            amount = c.getDouble(c.getColumnIndexOrThrow("amount")),
+            currency = c.getString(c.getColumnIndexOrThrow("currency")),
+            amountPkr = c.getDouble(c.getColumnIndexOrThrow("amount_pkr")),
+            warranty = c.getString(c.getColumnIndexOrThrow("warranty")) ?: "Not Stated",
+            stockStatus = c.getString(c.getColumnIndexOrThrow("stock_status")) ?: "Available",
+            verificationStatus = VerificationStatus.valueOf(c.getString(c.getColumnIndexOrThrow("verification_status"))),
+            riskLevel = RiskLevel.valueOf(c.getString(c.getColumnIndexOrThrow("risk_level"))),
+            captureMethod = c.getString(c.getColumnIndexOrThrow("capture_method")) ?: "ANDROID_BOT_SCANNER",
+            originalRawText = c.getString(c.getColumnIndexOrThrow("original_raw_text")),
+            sourceUrl = c.getString(c.getColumnIndexOrThrow("source_url")),
+            observedAt = c.getLong(c.getColumnIndexOrThrow("observed_at"))
+        )
     }
 }

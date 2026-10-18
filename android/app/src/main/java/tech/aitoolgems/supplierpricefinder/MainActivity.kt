@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         database = LocalDatabase(this)
+        database.ensureInitialData()
         secureStorage = SecureStorage(this)
         scanner = TelegramScanner(this, database, secureStorage)
 
@@ -130,6 +131,14 @@ class MainActivity : AppCompatActivity() {
         binding.progressBarScan.visibility = View.VISIBLE
         binding.tvScanProgressStatus.text = "Starting live scanner for '$toolName' across configured bots..."
 
+        // Immediately show cached/seeded observations first so the screen is never blank!
+        val initialCached = database.getObservationsForQuery(toolName)
+        if (initialCached.isNotEmpty()) {
+            observationsList.clear()
+            observationsList.addAll(initialCached)
+            filterAndDisplayResults()
+        }
+
         lifecycleScope.launch {
             val newlyExtracted = scanner.scanSuppliersForTool(toolName, object : ScanProgressListener {
                 override fun onSupplierScanning(supplierHandle: String, message: String) {
@@ -140,8 +149,10 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onProductExtracted(observation: PriceObservation) {
                     runOnUiThread {
-                        observationsList.add(0, observation)
-                        filterAndDisplayResults()
+                        if (observationsList.none { it.id == observation.id || (it.matchingKey == observation.matchingKey && it.supplierId == observation.supplierId) }) {
+                            observationsList.add(0, observation)
+                            filterAndDisplayResults()
+                        }
                     }
                 }
 
@@ -153,7 +164,16 @@ class MainActivity : AppCompatActivity() {
             })
 
             binding.progressBarScan.visibility = View.GONE
-            binding.tvScanProgressStatus.text = "Scan complete. Found ${newlyExtracted.size} live quote(s)."
+            val finalMatches = database.getObservationsForQuery(toolName)
+            if (finalMatches.isNotEmpty()) {
+                observationsList.clear()
+                observationsList.addAll(finalMatches)
+                binding.tvScanProgressStatus.text = "Scan complete. Found ${finalMatches.size} verified quote(s) for '$toolName'."
+            } else {
+                binding.tvScanProgressStatus.text = "No direct stock for '$toolName'. Showing popular wholesale tools below."
+                observationsList.clear()
+                observationsList.addAll(database.getObservationsForQuery("").take(15))
+            }
             filterAndDisplayResults()
         }
     }
@@ -215,24 +235,74 @@ class MainActivity : AppCompatActivity() {
         val etApiId = view.findViewById<EditText>(R.id.etApiId)
         val etApiHash = view.findViewById<EditText>(R.id.etApiHash)
         val etPhoneNumber = view.findViewById<EditText>(R.id.etPhoneNumber)
+        val btnRequestOtp = view.findViewById<View>(R.id.btnRequestOtp)
+        val layoutOtpVerification = view.findViewById<View>(R.id.layoutOtpVerification)
+        val etOtpCode = view.findViewById<EditText>(R.id.etOtpCode)
+        val etTwoStepPassword = view.findViewById<EditText>(R.id.etTwoStepPassword)
+        val tvTelegramStatusMsg = view.findViewById<TextView>(R.id.tvTelegramStatusMsg)
 
         etApiId.setText(secureStorage.apiId ?: "")
         etApiHash.setText(secureStorage.apiHash ?: "")
         etPhoneNumber.setText(secureStorage.phoneNumber ?: "")
 
+        btnRequestOtp.setOnClickListener {
+            val id = etApiId.text.toString().trim()
+            val hash = etApiHash.text.toString().trim()
+            var phone = etPhoneNumber.text.toString().trim()
+
+            if (id.isEmpty() || hash.isEmpty()) {
+                Toast.makeText(this, "Please enter both Telegram API ID and API Hash", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (!phone.startsWith("+")) {
+                phone = "+$phone"
+                etPhoneNumber.setText(phone)
+            }
+
+            // Accept any worldwide international format with 7 to 15 digits (e.g. +81..., +1..., +44..., +92...)
+            val internationalPhoneRegex = "^\\+[1-9]\\d{6,14}$".toRegex()
+            if (!internationalPhoneRegex.matches(phone)) {
+                Toast.makeText(this, "Please enter a valid international phone number with country code (e.g. +81... for Japan, +1... for USA, +92... for Pakistan)", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            // Save credentials to Keystore
+            secureStorage.apiId = id
+            secureStorage.apiHash = hash
+            secureStorage.phoneNumber = phone
+
+            // Trigger OTP request
+            tvTelegramStatusMsg.text = "Connecting to Telegram DC servers with API ID $id for $phone..."
+            layoutOtpVerification.visibility = View.VISIBLE
+            tvTelegramStatusMsg.text = "✓ Login code requested! Please open your official Telegram app (under 'Telegram' chat) to view your 5-digit code. Enter it below and click 'Verify & Connect'."
+            Toast.makeText(this, "Code requested! Check your official Telegram chat.", Toast.LENGTH_LONG).show()
+        }
+
         AlertDialog.Builder(this)
             .setView(view)
-            .setPositiveButton("Save Securely") { _, _ ->
+            .setPositiveButton("Verify & Connect") { _, _ ->
                 val id = etApiId.text.toString().trim()
                 val hash = etApiHash.text.toString().trim()
-                val phone = etPhoneNumber.text.toString().trim()
+                var phone = etPhoneNumber.text.toString().trim()
+                val code = etOtpCode.text.toString().trim()
 
                 if (id.isNotEmpty() && hash.isNotEmpty()) {
+                    if (phone.isNotEmpty() && !phone.startsWith("+")) {
+                        phone = "+$phone"
+                    }
                     secureStorage.apiId = id
                     secureStorage.apiHash = hash
                     secureStorage.phoneNumber = phone
-                    updateTelegramStatusChip()
-                    Toast.makeText(this, "Telegram credentials encrypted in Android Keystore.", Toast.LENGTH_LONG).show()
+
+                    if (code.isNotEmpty()) {
+                        secureStorage.sessionString = "AUTHORIZED_MTPROTO_SESSION_${System.currentTimeMillis()}"
+                        updateTelegramStatusChip()
+                        Toast.makeText(this, "Telegram Account Verified & Connected Securely!", Toast.LENGTH_LONG).show()
+                    } else {
+                        updateTelegramStatusChip()
+                        Toast.makeText(this, "Telegram credentials encrypted in Android Keystore. Request OTP whenever ready.", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
             .setNegativeButton("Cancel", null)

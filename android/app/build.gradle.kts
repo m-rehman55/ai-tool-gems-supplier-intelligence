@@ -30,8 +30,6 @@ android {
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
-            v1SigningEnabled = true
-            v2SigningEnabled = true
         }
     }
 

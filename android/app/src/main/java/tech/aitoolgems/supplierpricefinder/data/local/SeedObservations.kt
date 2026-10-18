@@ -78,7 +78,7 @@ object SeedObservations {
             productName = "Google Gemini",
             planName = "Gemini Advanced 18 Months",
             duration = "18 Months",
-            accessType = AccessType.INVITE,
+            accessType = AccessType.PRIVATE,
             matchingKey = "google_gemini__advanced__18_months__invite",
             amount = 3.80,
             currency = "USD",

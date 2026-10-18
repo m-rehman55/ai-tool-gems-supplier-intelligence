@@ -175,13 +175,6 @@ class TelegramClientManager private constructor(private val context: Context) {
             is TdApi.AuthorizationStateWaitTdlibParameters -> {
                 sendTdlibParameters()
             }
-            is TdApi.AuthorizationStateWaitEncryptionKey -> {
-                client?.send(TdApi.CheckDatabaseEncryptionKey(byteArrayOf())) { result ->
-                    if (result is TdApi.Error) {
-                        notifyState(TelegramAuthState.ERROR, "Database encryption error: ${result.message}")
-                    }
-                }
-            }
             is TdApi.AuthorizationStateWaitPhoneNumber -> {
                 notifyState(TelegramAuthState.WAIT_PHONE_NUMBER, "Ready for phone number.")
                 if (targetPhoneNumber.isNotEmpty()) {
@@ -212,8 +205,8 @@ class TelegramClientManager private constructor(private val context: Context) {
                 client?.send(TdApi.GetMe()) { result ->
                     if (result is TdApi.User) {
                         authenticatedUserId = result.id
-                        val username = if (!result.username.isNullOrEmpty()) "@${result.username}" else result.phoneNumber
-                        authenticatedUserName = "${result.firstName} $username"
+                        val displayName = "${result.firstName} ${result.lastName}".trim()
+                        authenticatedUserName = if (displayName.isNotEmpty()) displayName else result.phoneNumber
                         notifyState(
                             TelegramAuthState.AUTHENTICATED,
                             "✓ Successfully connected as $authenticatedUserName! Ready to inspect supplier bots."

@@ -118,6 +118,9 @@ object PlanMatcher {
         if (t.contains("month") || t.contains("day") || t.contains("year") || t.contains("private") || t.contains("shared")) {
             return 60 // Variant selector
         }
+        if (t.contains("support") || t.contains("help") || t.contains("faq") || t.contains("rules") || t.contains("terms") || t.contains("contact")) {
+            return 5 // Informational / non-catalog buttons
+        }
         return 10 // Other safe items
     }
 

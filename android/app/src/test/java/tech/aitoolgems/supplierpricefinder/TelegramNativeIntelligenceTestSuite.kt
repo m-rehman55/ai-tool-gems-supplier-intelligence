@@ -7,9 +7,6 @@ import tech.aitoolgems.supplierpricefinder.data.model.*
 import tech.aitoolgems.supplierpricefinder.engine.PlanMatcher
 import tech.aitoolgems.supplierpricefinder.engine.PriceExtractor
 import tech.aitoolgems.supplierpricefinder.engine.SafetyBoundary
-import tech.aitoolgems.supplierpricefinder.telegram.CrawlerButton
-import tech.aitoolgems.supplierpricefinder.telegram.CrawlerButtonType
-import tech.aitoolgems.supplierpricefinder.telegram.CrawlerMenu
 import tech.aitoolgems.supplierpricefinder.telegram.MockTelegramFixtures
 
 /**
@@ -94,9 +91,9 @@ class TelegramNativeIntelligenceTestSuite {
     @Test
     fun testBotDeduplicationByStableIdentity() {
         val bots = listOf(
-            DiscoveredTelegramBot(chatId = 12345L, botUserId = 101L, title = "Alpha Bot", username = "alpha_bot"),
-            DiscoveredTelegramBot(chatId = 12345L, botUserId = 101L, title = "Alpha Bot (Updated Title)", username = "alpha_bot"),
-            DiscoveredTelegramBot(chatId = 67890L, botUserId = 202L, title = "Beta Bot", username = "beta_bot")
+            DiscoveredTelegramBot(chatId = 12345L, userId = 101L, title = "Alpha Bot", username = "alpha_bot"),
+            DiscoveredTelegramBot(chatId = 12345L, userId = 101L, title = "Alpha Bot (Updated Title)", username = "alpha_bot"),
+            DiscoveredTelegramBot(chatId = 67890L, userId = 202L, title = "Beta Bot", username = "beta_bot")
         )
 
         // Deduplicate by stable chatId

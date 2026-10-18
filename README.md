@@ -2,7 +2,7 @@
 
 **Classification:** STRICTLY CONFIDENTIAL — Internal Wholesale Sourcing Intelligence  
 **Target Business:** AI Tool Gems Pakistan ([aitoolgems.tech](https://aitoolgems.tech/))  
-**Repository:** `m-rehman55/ai-tool-gems-supplier-intelligence` (Private)
+**Repository:** `m-rehman55/ai-tool-gems-supplier-intelligence` (Public — Zero Secrets Committed)
 
 ---
 

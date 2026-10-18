@@ -138,8 +138,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateTelegramStatusChip() {
         if (secureStorage.isConfigured) {
-            val phone = secureStorage.phoneNumber ?: "Connected"
-            binding.chipTelegramStatus.text = "Telegram: Connected ($phone)"
+            val rawPhone = secureStorage.phoneNumber ?: ""
+            val maskedPhone = if (rawPhone.length > 6) {
+                rawPhone.take(3) + "****" + rawPhone.takeLast(4)
+            } else {
+                "Configured"
+            }
+            binding.chipTelegramStatus.text = "Telegram: Credentials Stored ($maskedPhone)"
             binding.chipTelegramStatus.setChipBackgroundColorResource(R.color.badge_verified)
             binding.chipTelegramStatus.setTextColor(getColor(R.color.badge_verified_text))
         } else {
@@ -412,7 +417,17 @@ class MainActivity : AppCompatActivity() {
         etApiHash.setText(secureStorage.apiHash ?: "")
         etPhoneNumber.setText(secureStorage.phoneNumber ?: "")
 
+        if (!secureStorage.isEncryptionAvailable) {
+            tvTelegramStatusMsg.text = "⚠️ Hardware Keystore encryption unavailable on this device. For account security, API credentials will not be stored in unencrypted plaintext."
+            tvTelegramStatusMsg.setTextColor(getColor(R.color.badge_risk_text))
+            btnRequestOtp.isEnabled = false
+        }
+
         btnRequestOtp.setOnClickListener {
+            if (!secureStorage.isEncryptionAvailable) {
+                Toast.makeText(this, "Secure hardware storage unavailable.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val id = etApiId.text.toString().trim()
             val hash = etApiHash.text.toString().trim()
             var phone = etPhoneNumber.text.toString().trim()

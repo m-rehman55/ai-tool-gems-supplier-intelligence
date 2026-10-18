@@ -63,7 +63,7 @@ class InternationalPhoneAndCatalogTest {
             assertTrue("Amount must be positive", item.amount > 0.0)
             assertTrue("PKR must be positive", item.amountPkr > 0.0)
             assertEquals("Currency must be USD or USDT", "USD", item.currency)
-            assertEquals("Seed observations must be verified", VerificationStatus.VERIFIED, item.verificationStatus)
+            assertEquals("Seed observations must be UNVERIFIED until live scan", VerificationStatus.USER_SUPPLIED_UNVERIFIED, item.verificationStatus)
         }
     }
 }

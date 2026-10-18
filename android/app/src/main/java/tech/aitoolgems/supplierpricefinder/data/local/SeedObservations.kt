@@ -22,7 +22,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Duolingo 12 Month Promo Code    $1.80      $0.80     -56%    Ends in   24h 0m   Oct 17, 2026  06:27 PM PKT   Available  4 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Duolingo 12 Month Promo Code USD 1.80 USD 0.80 -56% Ends in 24h 0m Oct 17, 2026 06:27 PM PKT Available 4 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -44,7 +44,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Proton VPN 1Y (FW)    $5.80      $4.50     -22%    Ends in   48h 0m   Oct 18, 2026  06:28 PM PKT   Available  18 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Proton VPN 1Y (FW) USD 5.80 USD 4.50 -22% Ends in 48h 0m Oct 18, 2026 06:28 PM PKT Available 18 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -66,7 +66,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Autodesk 3Y On Mail (FW)    $4.00      $1.30     -68%    Ends in   48h 0m   Oct 18, 2026  06:30 PM PKT   Available  26 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Autodesk 3Y On Mail (FW) USD 4.00 USD 1.30 -68% Ends in 48h 0m Oct 18, 2026 06:30 PM PKT Available 26 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -88,7 +88,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Proton VPN Lifetime (FW)    $9.90      $8.00     -19%    Ends in   48h 0m   Oct 18, 2026  06:31 PM PKT   Available  46 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Proton VPN Lifetime (FW) USD 9.90 USD 8.00 -19% Ends in 48h 0m Oct 18, 2026 06:31 PM PKT Available 46 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -110,7 +110,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Perplexity Pro 12M (FW)    $49.00      $46.50     -5%    Ends in   24h 0m   Oct 17, 2026  06:36 PM PKT   Available  8 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Perplexity Pro 12M (FW) USD 49.00 USD 46.50 -5% Ends in 24h 0m Oct 17, 2026 06:36 PM PKT Available 8 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -132,7 +132,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Lovable Lite 12M (FW)    $15.00      $12.00     -20%    Ends in   24h 0m   Oct 17, 2026  06:36 PM PKT   Available  5 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Lovable Lite 12M (FW) USD 15.00 USD 12.00 -20% Ends in 24h 0m Oct 17, 2026 06:36 PM PKT Available 5 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -154,7 +154,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Coursera Premium 12M    $6.50      $3.50     -46%    Ends in   48h 0m   Oct 18, 2026  06:37 PM PKT   Available  3 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Coursera Premium 12M USD 6.50 USD 3.50 -46% Ends in 48h 0m Oct 18, 2026 06:37 PM PKT Available 3 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -176,7 +176,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "NEW IN STOCK     ILovePdF Premium 1Y   Description:  Full access to all iLovePDF tools  Unlimited document processing  Access on Web, Mobile, and Desktop  Electronic signatures  Ad-free experience  Re",
+            originalRawText = "NEW IN STOCK ILovePdF Premium 1Y Description: Full access to all iLovePDF tools Unlimited document processing Access on Web, Mobile, and Desktop Electronic signatures Ad-free experience Regional file ",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -198,7 +198,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Telegram 500+ buy/sell Public Groups    $8.70      $5.20     -40%    Ends in   48h 0m   Oct 18, 2026  08:15 PM PKT   Available  16 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Telegram 500+ buy/sell Public Groups USD 8.70 USD 5.20 -40% Ends in 48h 0m Oct 18, 2026 08:15 PM PKT Available 16 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -220,7 +220,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "BACK IN STOCK     Chatgpt Plus 1M UPI (NW)    Freshly restocked  1 new item now available.    FLASH SALE     $5.80      $5.20     -10%    Ends in   2m   Oct 16, 2026  08:18 PM PKT   Available  10 in s",
+            originalRawText = "BACK IN STOCK Chatgpt Plus 1M UPI (NW) Freshly restocked 1 new item now available. FLASH SALE USD 5.80 USD 5.20 -10% Ends in 2m Oct 16, 2026 08:18 PM PKT Available 10 in stock Tap below to order befor",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -242,7 +242,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Chatgpt Plus 1M (FW)    $14.70      $12.50     -15%    Ends in   6h 0m   Oct 17, 2026  03:31 AM PKT   Available  4 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Chatgpt Plus 1M (FW) USD 14.70 USD 12.50 -15% Ends in 6h 0m Oct 17, 2026 03:31 AM PKT Available 4 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -264,7 +264,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "NEW IN STOCK     JetBrain Edu 1Y (FW)   JetBrains package for studying, programming, and software development.  Use the JetBrains IDE suite  IntelliJ IDEA, PyCharm, WebStorm, CLion, Rider...  Full fea",
+            originalRawText = "NEW IN STOCK JetBrain Edu 1Y (FW) JetBrains package for studying, programming, and software development. Use the JetBrains IDE suite IntelliJ IDEA, PyCharm, WebStorm, CLion, Rider... Full features for",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -286,7 +286,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Chatgpt Go 1 Month (FW)    $5.80      $4.80     -17%    Ends in   3h 0m   Oct 17, 2026  07:02 AM PKT   Available  3 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Chatgpt Go 1 Month (FW) USD 5.80 USD 4.80 -17% Ends in 3h 0m Oct 17, 2026 07:02 AM PKT Available 3 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -308,7 +308,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Chatgpt Plus GGPAY 1M    $10.30      $9.20     -11%    Ends in   3h 0m   Oct 17, 2026  07:03 AM PKT   Available  8 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Chatgpt Plus GGPAY 1M USD 10.30 USD 9.20 -11% Ends in 3h 0m Oct 17, 2026 07:03 AM PKT Available 8 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -330,7 +330,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Chatgpt Plus ApplePay 1M (NW)    $10.50      $8.00     -24%    Ends in   24h 0m   Oct 18, 2026  04:06 AM PKT   Available  4 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Chatgpt Plus ApplePay 1M (NW) USD 10.50 USD 8.00 -24% Ends in 24h 0m Oct 18, 2026 04:06 AM PKT Available 4 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -352,7 +352,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "NEW IN STOCK     Chatgpt Business Slot (FW)   Send GPT mail to get added into Family  Can be renewed for several months, notify 3-5 days before the expiration date Only the GPT Team package is covered",
+            originalRawText = "NEW IN STOCK Chatgpt Business Slot (FW) Send GPT mail to get added into Family Can be renewed for several months, notify 3-5 days before the expiration date Only the GPT Team package is covered under ",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -374,7 +374,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "BACK IN STOCK     Chatgpt Plus ApplePay 1M (NW)    Freshly restocked  3 new items now available.    FLASH SALE     $10.50      $8.00     -24%    Ends in   21h 33m   Oct 18, 2026  04:06 AM PKT   Availa",
+            originalRawText = "BACK IN STOCK Chatgpt Plus ApplePay 1M (NW) Freshly restocked 3 new items now available. FLASH SALE USD 10.50 USD 8.00 -24% Ends in 21h 33m Oct 18, 2026 04:06 AM PKT Available 7 in stock Tap below to ",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -396,7 +396,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE     Chatgpt Plus 1M UPI (NW)    $5.80      $5.00     -14%    Ends in   2h 0m   Oct 17, 2026  05:33 PM PKT   Available  9 in stock  Lightning deal  once it's gone, it's gone.",
+            originalRawText = "FLASH SALE Chatgpt Plus 1M UPI (NW) USD 5.80 USD 5.00 -14% Ends in 2h 0m Oct 17, 2026 05:33 PM PKT Available 9 in stock Lightning deal once it's gone, it's gone.",
             sourceUrl = "https://t.me/digicarttools",
             observedAt = 1729267200000L
         ),
@@ -418,7 +418,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "ChatGPT Ver Students Plus 4 months no warranty  Price: $8.84  Stock: 8 accounts  Sold: 38 accounts  Description: ChatGPT Ver Students Plus 4 Months This batch everyone receives, just go to https://cha",
+            originalRawText = "ChatGPT Ver Students Plus 4 months no warranty Price: USD 8.84 Stock: 8 accounts Sold: 38 accounts Description: ChatGPT Ver Students Plus 4 Months This batch everyone receives, just go to https://chat",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -428,7 +428,7 @@ object SeedObservations {
             supplierName = "PiggyAI Premium",
             supplierHandle = "@PiggyAi799_Bot",
             productName = "OpenArt Essential AI",
-            planName = "OpenArt Essential $14 - 4k credit 1 month warranty 1 day",
+            planName = "OpenArt Essential USD 14 - 4k credit 1 month warranty 1 day",
             duration = "1 Months",
             accessType = AccessType.PRIVATE,
             matchingKey = "openart_essential_ai_1_months",
@@ -440,7 +440,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "OpenArt Essential $14 - 4k credit 1 month warranty 1 day  Price: $5.91  Stock: 9 accounts  Sold: 226 accounts",
+            originalRawText = "OpenArt Essential USD 14 - 4k credit 1 month warranty 1 day Price: USD 5.91 Stock: 9 accounts Sold: 226 accounts",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -462,7 +462,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "ChatGPT Plus K12 Edu 2 years warranty 5h  Price: $4.63  Stock: 10 accounts  Sold: 893 accounts",
+            originalRawText = "ChatGPT Plus K12 Edu 2 years warranty 5h Price: USD 4.63 Stock: 10 accounts Sold: 893 accounts",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -484,7 +484,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Private Netflix Premium 4K slot for 1 month (full warranty)  Price: $3.24  Stock: 16 accounts  Sold: 362 accounts",
+            originalRawText = "Private Netflix Premium 4K slot for 1 month (full warranty) Price: USD 3.24 Stock: 16 accounts Sold: 362 accounts",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -506,7 +506,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Private Netflix Premium 4K slot for 3 months (full warranty)  Price: $7.62  Stock: 18 accounts  Sold: 3 accounts",
+            originalRawText = "Private Netflix Premium 4K slot for 3 months (full warranty) Price: USD 7.62 Stock: 18 accounts Sold: 3 accounts",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -528,7 +528,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Muse AI 1B Token 1 Month - 24H Warranty  Price: $2.67  Stock: 94 accounts  Sold: 138 accounts",
+            originalRawText = "Muse AI 1B Token 1 Month - 24H Warranty Price: USD 2.67 Stock: 94 accounts Sold: 138 accounts",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -550,7 +550,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "CapCut Pro Team 6 Months - full warranty  Price: $12.32  Stock: 5 accounts  Sold: 0 accounts  Description: Capcut Pro team account with 180-day usage limit.  Can receive up to 2000 AI Credits  Format:",
+            originalRawText = "CapCut Pro Team 6 Months - full warranty Price: USD 12.32 Stock: 5 accounts Sold: 0 accounts Description: Capcut Pro team account with 180-day usage limit. Can receive up to 2000 AI Credits Format: Em",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -572,7 +572,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "ChatGPT Ver Students officially owned Plus 4 months no warranty  Price: $10.77  Stock:  accounts  Sold: 0 accounts",
+            originalRawText = "ChatGPT Ver Students officially owned Plus 4 months no warranty Price: USD 10.77 Stock: accounts Sold: 0 accounts",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -594,7 +594,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "CAPCUT PRO PERSONAL 30D full warranty  Price: $1.27  Stock: 14 accounts  Sold: 4 accounts  Description: CAPCUT PRO PERSONAL 30 DAYS - FULL WARRANTY - FORMAT: ACCOUNT|PASSWORD no warranty FREQUENT ACCE",
+            originalRawText = "CAPCUT PRO PERSONAL 30D full warranty Price: USD 1.27 Stock: 14 accounts Sold: 4 accounts Description: CAPCUT PRO PERSONAL 30 DAYS - FULL WARRANTY - FORMAT: ACCOUNT|PASSWORD no warranty FREQUENT ACCES",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -616,7 +616,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Payment for Chat Gpt Student 4 months no warranty  Added: 4  Current stock: 4  Price: $7.7",
+            originalRawText = "Payment for Chat Gpt Student 4 months no warranty Added: 4 Current stock: 4 Price: USD 7.7",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -638,7 +638,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "GPT Plus 30 DAYS warranty 1 Day  Price: $7.62  Stock: 6 accounts  Sold: 259 accounts",
+            originalRawText = "GPT Plus 30 DAYS warranty 1 Day Price: USD 7.62 Stock: 6 accounts Sold: 259 accounts",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -647,11 +647,11 @@ object SeedObservations {
             supplierId = 2L,
             supplierName = "PiggyAI Premium",
             supplierHandle = "@PiggyAi799_Bot",
-            productName = "API Codex $100 7 days full war",
-            planName = "API Codex $100 7 days full warranty",
+            productName = "API Codex USD 100 7 days full ",
+            planName = "API Codex USD 100 7 days full warranty",
             duration = "7 Days",
             accessType = AccessType.PRIVATE,
-            matchingKey = "api_codex_$100_7_days_full_war_7_days",
+            matchingKey = "api_codex_usd_100_7_days_full__7_days",
             amount = 100.0,
             currency = "USD",
             amountPkr = 28000.0,
@@ -660,7 +660,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "API Codex $100 7 days full warranty  Price: $3.43  Stock: 13 accounts  Sold: 108 accounts  Description: API Codex $100 - Products sourced from OpenAI - Token price is calculated according to the price",
+            originalRawText = "API Codex USD 100 7 days full warranty Price: USD 3.43 Stock: 13 accounts Sold: 108 accounts Description: API Codex USD 100 - Products sourced from OpenAI - Token price is calculated according to the ",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -682,7 +682,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "ChatGPT Ver Students Plus 4 months no warranty  Price: $11.21  Stock: 8 accounts  Sold: 75 accounts",
+            originalRawText = "ChatGPT Ver Students Plus 4 months no warranty Price: USD 11.21 Stock: 8 accounts Sold: 75 accounts",
             sourceUrl = "https://t.me/PiggyAIPremium",
             observedAt = 1729267200000L
         ),
@@ -704,7 +704,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Manus Pro 1 Year  Discount: 28% OFF  Price: $40.00  $28.80  Only for the next 10.3 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Manus Pro 1 Year Discount: 28% OFF Price: USD 40.00 USD 28.80 Only for the next 10.3 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -726,7 +726,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    HEYGEN CREATOR 1 MONTH (warranty 1 day)  Discount: 32% OFF  Price: $18.48  $12.57  Only for the next 12.6 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! HEYGEN CREATOR 1 MONTH (warranty 1 day) Discount: 32% OFF Price: USD 18.48 USD 12.57 Only for the next 12.6 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -748,7 +748,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Krea Basic 5100 credit 1 month warranty 1 day  Discount: 23% OFF  Price: $7.77  $5.98  Only for the next 7.6 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Krea Basic 5100 credit 1 month warranty 1 day Discount: 23% OFF Price: USD 7.77 USD 5.98 Only for the next 7.6 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -770,7 +770,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Kling Standard 800-1000 Credits 1M  Discount: 33% OFF  Price: $7.50  $5.02  Only for the next 13.1 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Kling Standard 800-1000 Credits 1M Discount: 33% OFF Price: USD 7.50 USD 5.02 Only for the next 13.1 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -792,7 +792,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    MUSE AI ACCOUNT  1 BILLION TOKENS  Discount: 30% OFF  Price: $4.00  $2.80  Only for the next 11.5 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! MUSE AI ACCOUNT 1 BILLION TOKENS Discount: 30% OFF Price: USD 4.00 USD 2.80 Only for the next 11.5 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -814,7 +814,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    1000+ Telegram Buy-Sell Groups/channel  Discount: 22% OFF  Price: $3.99  $3.11  Only for the next 6.9 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! 1000+ Telegram Buy-Sell Groups/channel Discount: 22% OFF Price: USD 3.99 USD 3.11 Only for the next 6.9 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -836,7 +836,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    LinkedIn Business Due 12 Months  Discount: 29% OFF  Price: $95.00  $67.45  Only for the next 11.0 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! LinkedIn Business Due 12 Months Discount: 29% OFF Price: USD 95.00 USD 67.45 Only for the next 11.0 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -858,7 +858,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Zoom Pro 28 Days full warranty  Discount: 27% OFF  Price: $4.00  $2.92  Only for the next 9.5 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Zoom Pro 28 Days full warranty Discount: 27% OFF Price: USD 4.00 USD 2.92 Only for the next 9.5 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -880,7 +880,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Elevanlabs Creator 1 Year (FW)  Discount: 33% OFF  Price: $60.00  $40.20  Only for the next 12.8 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Elevanlabs Creator 1 Year (FW) Discount: 33% OFF Price: USD 60.00 USD 40.20 Only for the next 12.8 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -902,7 +902,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Capcut Pro 6M  Discount: 26% OFF  Price: $19.00  $14.06  Only for the next 9.3 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Capcut Pro 6M Discount: 26% OFF Price: USD 19.00 USD 14.06 Only for the next 9.3 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -924,7 +924,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Autodesk (Commercial  Flex) AEC-All Apps Admin  Discount: 31% OFF  Price: $45.00  $31.05  Only for the next 11.8 hours!   Order now  the price goes back to normal when the timer en",
+            originalRawText = "FLASH SALE LIVE! Autodesk (Commercial Flex) AEC-All Apps Admin Discount: 31% OFF Price: USD 45.00 USD 31.05 Only for the next 11.8 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -946,7 +946,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Adobe Acrobat Pro 2020  Lifetime Deal!  Discount: 26% OFF  Price: $14.99  $11.09  Only for the next 9.2 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Adobe Acrobat Pro 2020 Lifetime Deal! Discount: 26% OFF Price: USD 14.99 USD 11.09 Only for the next 9.2 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -968,7 +968,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Adobe Acrobat Pro 2022  Lifetime License Key (1 PC | Windows)  Discount: 32% OFF  Price: $45.99  $31.27  Only for the next 12.6 hours!   Order now  the price goes back to normal wh",
+            originalRawText = "FLASH SALE LIVE! Adobe Acrobat Pro 2022 Lifetime License Key (1 PC | Windows) Discount: 32% OFF Price: USD 45.99 USD 31.27 Only for the next 12.6 hours! Order now the price goes back to normal when th",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -990,7 +990,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Coreldraw Graphics Suite X7  Discount: 26% OFF  Price: $19.00  $14.06  Only for the next 9.2 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Coreldraw Graphics Suite X7 Discount: 26% OFF Price: USD 19.00 USD 14.06 Only for the next 9.2 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -1012,7 +1012,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Corel Draw Standard 2021 For Windows  Discount: 29% OFF  Price: $19.99  $14.19  Only for the next 11.0 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Corel Draw Standard 2021 For Windows Discount: 29% OFF Price: USD 19.99 USD 14.19 Only for the next 11.0 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -1034,7 +1034,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    CorelDRAW Graphics Suite 2025  Discount: 32% OFF  Price: $19.99  $13.59  Only for the next 12.2 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! CorelDRAW Graphics Suite 2025 Discount: 32% OFF Price: USD 19.99 USD 13.59 Only for the next 12.2 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -1056,7 +1056,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    CorelDRAW Graphics Suite 2026  Discount: 20% OFF  Price: $25.00  $20.00  Only for the next 6.0 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! CorelDRAW Graphics Suite 2026 Discount: 20% OFF Price: USD 25.00 USD 20.00 Only for the next 6.0 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -1078,7 +1078,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!      ( )  Discount: 30% OFF  Price: $25.00  $17.50  Only for the next 11.3 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! ( ) Discount: 30% OFF Price: USD 25.00 USD 17.50 Only for the next 11.3 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -1100,7 +1100,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    iLovePdf Premium 1Y  Discount: 32% OFF  Price: $1.50  $1.02  Only for the next 12.5 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! iLovePdf Premium 1Y Discount: 32% OFF Price: USD 1.50 USD 1.02 Only for the next 12.5 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -1122,7 +1122,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "FLASH SALE LIVE!    Lovable Pro 12m  Discount: 24% OFF  Price: $45.00  $34.20  Only for the next 8.2 hours!   Order now  the price goes back to normal when the timer ends!",
+            originalRawText = "FLASH SALE LIVE! Lovable Pro 12m Discount: 24% OFF Price: USD 45.00 USD 34.20 Only for the next 8.2 hours! Order now the price goes back to normal when the timer ends!",
             sourceUrl = "https://t.me/sellnitystoreupdates",
             observedAt = 1729267200000L
         ),
@@ -1144,7 +1144,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Restocked - Gemini New 7 Days Expiry Links   Gemini New 7 Days Expiry Links  Price: 0.6 USDT  Instant delivery: Available now (132)   Buy before it's gone   Time: 17-Oct-2026 09:09 AM IST",
+            originalRawText = "Restocked - Gemini New 7 Days Expiry Links Gemini New 7 Days Expiry Links Price: 0.6 USDT Instant delivery: Available now (132) Buy before it's gone Time: 17-Oct-2026 09:09 AM IST",
             sourceUrl = "https://t.me/verifiedstreams",
             observedAt = 1729267200000L
         ),
@@ -1166,7 +1166,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Leonardo AI 8k-8.5K Cre  Price : 1$",
+            originalRawText = "Leonardo AI 8k-8.5K Cre Price : 1USD",
             sourceUrl = "https://t.me/novasubpre",
             observedAt = 1729267200000L
         ),
@@ -1175,11 +1175,11 @@ object SeedObservations {
             supplierId = 4L,
             supplierName = "NovaShop Premium",
             supplierHandle = "@Novasubglo_bot",
-            productName = "GROK SUPER 9-10 Days only 2$",
-            planName = "GROK SUPER 9-10 Days only 2$",
+            productName = "Grok 2 SuperGrok",
+            planName = "GROK SUPER 9-10 Days only 2USD",
             duration = "10 Days",
             accessType = AccessType.PRIVATE,
-            matchingKey = "grok_super_9-10_days_only_2$_10_days",
+            matchingKey = "grok_2_supergrok_10_days",
             amount = 2.0,
             currency = "USD",
             amountPkr = 560.0,
@@ -1188,7 +1188,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "GROK SUPER 9-10 Days only 2$  BUY NOWWWWWWWW",
+            originalRawText = "GROK SUPER 9-10 Days only 2USD BUY NOWWWWWWWW",
             sourceUrl = "https://t.me/novasubpre",
             observedAt = 1729267200000L
         ),
@@ -1210,7 +1210,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "(So Beautiful) Chatgpt Plus Apple Pay 1 month full warranty  Price: $10.48  Stock: 37 accounts  Sold: 2.132 accounts  Description: ChatGPT Plus 1 Month Full Warranty Format: Email|Password|2FA Login I",
+            originalRawText = "(So Beautiful) Chatgpt Plus Apple Pay 1 month full warranty Price: USD 10.48 Stock: 37 accounts Sold: 2.132 accounts Description: ChatGPT Plus 1 Month Full Warranty Format: Email|Password|2FA Login In",
             sourceUrl = "https://t.me/novasubpre",
             observedAt = 1729267200000L
         ),
@@ -1220,7 +1220,7 @@ object SeedObservations {
             supplierName = "NovaShop Premium",
             supplierHandle = "@Novasubglo_bot",
             productName = "ChatGPT Plus",
-            planName = "(So Beautiful) Chatgpt Plus Apple Pay 1 month full warranty  Price: $10.48  Stock: 37 accounts  Sold: 2.132 accounts  Description: ChatGPT Plus 1 Month Full Warranty Format: Email|Password|2FA Login Instructions 1 Go to chatgpt.com 2 Choose login",
+            planName = "(So Beautiful) Chatgpt Plus Apple Pay 1 month full warranty Price: USD 10.48 Stock: 37 accounts Sold: 2.132 accounts Description: ChatGPT Plus 1 Month Full Warranty Format: Email|Password|2FA Login Instructions 1 Go to chatgpt.com 2 Choose login",
             duration = "1 Months",
             accessType = AccessType.PRIVATE,
             matchingKey = "chatgpt_plus_1_months",
@@ -1232,7 +1232,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "(So Beautiful) Chatgpt Plus Apple Pay 1 month full warranty  Price: $10.48  Stock: 37 accounts  Sold: 2.132 accounts  Description: ChatGPT Plus 1 Month Full Warranty Format: Email|Password|2FA Login I",
+            originalRawText = "(So Beautiful) Chatgpt Plus Apple Pay 1 month full warranty Price: USD 10.48 Stock: 37 accounts Sold: 2.132 accounts Description: ChatGPT Plus 1 Month Full Warranty Format: Email|Password|2FA Login In",
             sourceUrl = "https://t.me/novasubpre",
             observedAt = 1729267200000L
         ),
@@ -1242,7 +1242,7 @@ object SeedObservations {
             supplierName = "NovaShop Premium",
             supplierHandle = "@Novasubglo_bot",
             productName = "Veo 3 Ultra",
-            planName = "Admin Veo3 x20 1 Month BHF 90$",
+            planName = "Admin Veo3 x20 1 Month BHF 90USD",
             duration = "1 Months",
             accessType = AccessType.TEAM,
             matchingKey = "veo_3_ultra_1_months",
@@ -1254,7 +1254,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Admin Veo3 x20 1 Month BHF 90$  DM MEEE to Order",
+            originalRawText = "Admin Veo3 x20 1 Month BHF 90USD DM MEEE to Order",
             sourceUrl = "https://t.me/novasubpre",
             observedAt = 1729267200000L
         ),
@@ -1276,7 +1276,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "ChatGPT Plus Pay with Cash 1 month full warranty  Price: $10.48  Stock: 17 accounts  Sold: 2.949 accounts  Description: The product is paid with real money, not a free trial, so it is very durable, st",
+            originalRawText = "ChatGPT Plus Pay with Cash 1 month full warranty Price: USD 10.48 Stock: 17 accounts Sold: 2.949 accounts Description: The product is paid with real money, not a free trial, so it is very durable, stu",
             sourceUrl = "https://t.me/novasubpre",
             observedAt = 1729267200000L
         ),
@@ -1298,7 +1298,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Gemini 18 Month Link No Warranty  Added: 1  Current stock: 1000  Price: $0.45",
+            originalRawText = "Gemini 18 Month Link No Warranty Added: 1 Current stock: 1000 Price: USD 0.45",
             sourceUrl = "https://t.me/hacksxtips",
             observedAt = 1729267200000L
         ),
@@ -1320,7 +1320,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Gemini 18 Month Link No Warranty  its Limited time offer !    Promotions: - Buy 100 for $0.42",
+            originalRawText = "Gemini 18 Month Link No Warranty its Limited time offer ! Promotions: - Buy 100 for USD 0.42",
             sourceUrl = "https://t.me/hacksxtips",
             observedAt = 1729267200000L
         ),
@@ -1342,7 +1342,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Gemini 18 Month Link   Limited Time Sale  Bulk Pricing : Buy 100+  For 0.4$",
+            originalRawText = "Gemini 18 Month Link Limited Time Sale Bulk Pricing : Buy 100+ For 0.4USD",
             sourceUrl = "https://t.me/hacksxtips",
             observedAt = 1729267200000L
         ),
@@ -1364,7 +1364,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Muse AI Account  2 billion tokens  Stock Has been added In very cheap rate Just 1.5$   Buy Now",
+            originalRawText = "Muse AI Account 2 billion tokens Stock Has been added In very cheap rate Just 1.5USD Buy Now",
             sourceUrl = "https://t.me/hacksxtips",
             observedAt = 1729267200000L
         ),
@@ -1386,7 +1386,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Get your OWN Telegram shop bot  ready in minutes!  Run your own digital-products shop, with the same system our shop uses:   Your own bot, your own brand and your own channel  Web dashboard to manage ",
+            originalRawText = "Get your OWN Telegram shop bot ready in minutes! Run your own digital-products shop, with the same system our shop uses: Your own bot, your own brand and your own channel Web dashboard to manage produ",
             sourceUrl = "https://t.me/hacksxtips",
             observedAt = 1729267200000L
         ),
@@ -1408,7 +1408,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "NEW ITEMS: AWS Code redeem   AWS Promotion Code redeem 150$ credit: 37$ Redeem the code before July 30, 2028. After redemption, the credits will be valid until August 30, 2028.   AWS Promotion Credits",
+            originalRawText = "NEW ITEMS: AWS Code redeem AWS Promotion Code redeem 150USD credit: 37USD Redeem the code before July 30, 2028. After redemption, the credits will be valid until August 30, 2028. AWS Promotion Credits",
             sourceUrl = "https://t.me/Airdrop_Crypto_x100",
             observedAt = 1729267200000L
         ),
@@ -1418,7 +1418,7 @@ object SeedObservations {
             supplierName = "AI Tool Pre Bot",
             supplierHandle = "@aitoolpre_bi_bot",
             productName = "Lovable Pro",
-            planName = "[MASSIVE CLEARANCE] LOVABLE AI PRO FOR ONLY $3",
+            planName = "[MASSIVE CLEARANCE] LOVABLE AI PRO FOR ONLY USD 3",
             duration = "15 Days",
             accessType = AccessType.PRIVATE,
             matchingKey = "lovable_pro_15_days",
@@ -1430,7 +1430,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "[MASSIVE CLEARANCE] LOVABLE AI PRO FOR ONLY $3   We are clearing out a batch of Lovable AI PRO accounts with pre-activated dates (active since Sep 15).    AITOOLPREMIUM SALE-OFF Details: Plan: PRO (10",
+            originalRawText = "[MASSIVE CLEARANCE] LOVABLE AI PRO FOR ONLY USD 3 We are clearing out a batch of Lovable AI PRO accounts with pre-activated dates (active since Sep 15). AITOOLPREMIUM SALE-OFF Details: Plan: PRO (100 ",
             sourceUrl = "https://t.me/Airdrop_Crypto_x100",
             observedAt = 1729267200000L
         ),
@@ -1452,7 +1452,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "NEW ITEMS: Bilt.me Bilt | AI Mobile App Builder    Description: Bilt is a vibe coding platform similar to Lovable, Bolt, and Base44, but specialized for mobile apps.  Format: Email | Password | Email ",
+            originalRawText = "NEW ITEMS: Bilt.me Bilt | AI Mobile App Builder Description: Bilt is a vibe coding platform similar to Lovable, Bolt, and Base44, but specialized for mobile apps. Format: Email | Password | Email toke",
             sourceUrl = "https://t.me/Airdrop_Crypto_x100",
             observedAt = 1729267200000L
         ),
@@ -1474,7 +1474,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "GIVE AWAY: Bilt.me PRO 2M Token Vibe coding 1 month - NO warranty FOR Trial Experience  Introduction: Bilt is a vibe coding similar to Lovable, Bolt, Base44 but specialized for mobile apps.  Format: E",
+            originalRawText = "GIVE AWAY: Bilt.me PRO 2M Token Vibe coding 1 month - NO warranty FOR Trial Experience Introduction: Bilt is a vibe coding similar to Lovable, Bolt, Base44 but specialized for mobile apps. Format: Ema",
             sourceUrl = "https://t.me/Airdrop_Crypto_x100",
             observedAt = 1729267200000L
         ),
@@ -1496,7 +1496,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "NEW ITEM : CHATGPT PRO 500  Original price: $500  MY PRICE : 222$ (Warranty 3 days)   Bot auto order @aitoolpre_bi_bot  For bulk orders or items not listed on the Bot, DM: @nvtoanr",
+            originalRawText = "NEW ITEM : CHATGPT PRO 500 Original price: USD 500 MY PRICE : 222USD (Warranty 3 days) Bot auto order @aitoolpre_bi_bot For bulk orders or items not listed on the Bot, DM: @nvtoanr",
             sourceUrl = "https://t.me/Airdrop_Crypto_x100",
             observedAt = 1729267200000L
         ),
@@ -1506,7 +1506,7 @@ object SeedObservations {
             supplierName = "AI Tool Pre Bot",
             supplierHandle = "@aitoolpre_bi_bot",
             productName = "ChatGPT Plus",
-            planName = "Chatgpt pro 200 115$",
+            planName = "Chatgpt pro 200 115USD",
             duration = "1 Month",
             accessType = AccessType.PRIVATE,
             matchingKey = "chatgpt_plus_1_month",
@@ -1518,7 +1518,7 @@ object SeedObservations {
             verificationStatus = VerificationStatus.VERIFIED,
             riskLevel = RiskLevel.LOW,
             captureMethod = "CANONICAL_SEED_OBSERVATION",
-            originalRawText = "Chatgpt pro 200 115$ Chatgpt pro 500 150$   NO-WARRANTY",
+            originalRawText = "Chatgpt pro 200 115USD Chatgpt pro 500 150USD NO-WARRANTY",
             sourceUrl = "https://t.me/Airdrop_Crypto_x100",
             observedAt = 1729267200000L
         ),

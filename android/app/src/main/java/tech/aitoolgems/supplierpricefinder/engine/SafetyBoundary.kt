@@ -14,13 +14,15 @@ object SafetyBoundary {
      */
     private val FORBIDDEN_TRANSACTION_PATTERNS = listOf(
         "\\bbuy\\s*now\\b",
+        "\\bbuy\\b",
+        "\\bpurchase\\b",
         "\\bcheckout\\b",
+        "\\border\\b",
         "\\bpay\\s*now\\b",
         "\\bpay\\b",
         "\\bpayment\\b",
         "\\bplace\\s+order\\b",
         "\\bconfirm\\s+order\\b",
-        "\\border\\s+now\\b",
         "\\bwallet\\b",
         "\\btop\\s*up\\b",
         "\\bdeposit\\b",
@@ -29,6 +31,8 @@ object SafetyBoundary {
         "\\bcart\\b",
         "\\badd\\s+to\\s+cart\\b",
         "\\bsubscribe\\b",
+        "\\bactivate\\b",
+        "\\brenew\\b",
         "\\bconfirm\\b",
         "\\bmake\\s+payment\\b",
         "\\bcrypto\\b",
@@ -38,7 +42,7 @@ object SafetyBoundary {
     ).map { it.toRegex(RegexOption.IGNORE_CASE) }
 
     private val FORBIDDEN_CALLBACK_PATTERNS = listOf(
-        "buynow_", "checkout_", "pay_", "deposit_", "invoice_", "topup_", "confirm_", "transfer_", "cart_"
+        "buy_", "buynow_", "order_", "checkout_", "pay_", "deposit_", "invoice_", "topup_", "confirm_", "transfer_", "cart_", "activate_", "renew_"
     )
 
     /**
@@ -86,10 +90,10 @@ object SafetyBoundary {
 
     /**
      * Evaluates the safety of a button using layered deterministic defense.
-     * 1. Hard Transaction Blocker: purchase, checkout, deposit, wallet are NEVER executed.
-     * 2. Button Type Check: Web Apps and Contact Requests are blocked.
-     * 3. Known Supplier Playbook: if user previously confirmed this exact menu button opens catalog.
-     * 4. Ambiguous Bare Buy: flags for manual review if no playbook exists.
+     * 1. Playbook Layer: if user previously confirmed this exact menu button opens catalog.
+     * 2. Ambiguous Bare Buy: flags for manual review if no playbook exists.
+     * 3. Hard Transaction Blocker: purchase, checkout, deposit, wallet are NEVER executed.
+     * 4. Button Type Check: Web Apps and Contact Requests are blocked.
      * 5. Catalog / Variant / Language / Gate Rule Matching.
      * 6. Fail-Closed: returns MANUAL_REVIEW_REQUIRED for anything unrecognized.
      */
@@ -103,7 +107,22 @@ object SafetyBoundary {
         val cleanText = buttonText.trim().lowercase(Locale.ROOT)
         val cleanData = callbackData.trim().lowercase(Locale.ROOT)
 
-        // 1. HARD SAFETY LAYER: Never purchase, checkout, pay, or modify account
+        // 1. PLAYBOOK LAYER: If operator previously validated this exact menu action as safe catalog
+        if (playbook != null && playbook.isUserApproved) {
+            if (playbook.menuFingerprint == menuFingerprint &&
+                playbook.actionLabel.equals(buttonText.trim(), ignoreCase = true)) {
+                return NavigationSafety.SAFE
+            }
+        }
+
+        // 2. AMBIGUOUS BARE BUY LAYER: Bare "Buy" or "Buy Tools" opens catalog on some bots, but checkouts on others.
+        for (pattern in AMBIGUOUS_CATALOG_PATTERNS) {
+            if (pattern.containsMatchIn(cleanText)) {
+                return NavigationSafety.MANUAL_REVIEW_REQUIRED
+            }
+        }
+
+        // 3. HARD SAFETY LAYER: Never purchase, checkout, pay, or modify account
         if (buttonType == CrawlerButtonType.BUY_TRANSACTION) {
             return NavigationSafety.BLOCKED_PURCHASE_RISK
         }
@@ -122,21 +141,6 @@ object SafetyBoundary {
         for (prefix in FORBIDDEN_CALLBACK_PATTERNS) {
             if (cleanData.contains(prefix)) {
                 return NavigationSafety.BLOCKED_PURCHASE_RISK
-            }
-        }
-
-        // 2. PLAYBOOK LAYER: If operator previously validated this exact menu action as safe catalog
-        if (playbook != null && playbook.isUserApproved) {
-            if (playbook.menuFingerprint == menuFingerprint &&
-                playbook.actionLabel.equals(buttonText.trim(), ignoreCase = true)) {
-                return NavigationSafety.SAFE
-            }
-        }
-
-        // 3. AMBIGUOUS BARE BUY LAYER: Bare "Buy" or "Buy Tools" opens catalog on some bots, but checkouts on others.
-        for (pattern in AMBIGUOUS_CATALOG_PATTERNS) {
-            if (pattern.containsMatchIn(cleanText)) {
-                return NavigationSafety.MANUAL_REVIEW_REQUIRED
             }
         }
 

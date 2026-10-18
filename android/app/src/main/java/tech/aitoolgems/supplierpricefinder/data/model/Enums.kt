@@ -26,15 +26,31 @@ enum class AccessType(val label: String) {
 }
 
 enum class VerificationStatus(val label: String) {
+    LIVE_OBSERVED("LIVE_OBSERVED"),
+    PARTIALLY_OBSERVED("PARTIALLY_OBSERVED"),
+    HISTORICAL("HISTORICAL"),
+    IMPORTED("IMPORTED"),
     VERIFIED("VERIFIED"),
     LIVE_OBSERVED_UNVERIFIED("LIVE_OBSERVED_UNVERIFIED"),
     CACHED("CACHED"),
     SEED_CATALOG("SEED_CATALOG"),
     USER_SUPPLIED_UNVERIFIED("USER_SUPPLIED_UNVERIFIED"),
     UNVERIFIED("UNVERIFIED"),
+    FAILED_EXTRACTION("FAILED_EXTRACTION"),
     STALE("STALE"),
     INCOMPLETE("INCOMPLETE"),
     MANUAL_REVIEW("MANUAL_REVIEW")
+}
+
+enum class SearchPolicy(val label: String) {
+    FAST_LOOKUP("⚡ Fast Lookup"),
+    EXHAUSTIVE_SCAN("🌐 Exhaustive Crawl")
+}
+
+enum class SupplierSource(val code: String, val label: String) {
+    TELEGRAM_DISCOVERY("TELEGRAM_DISCOVERY", "Telegram Discovered"),
+    SEED_DATA("SEED_DATA", "Seed Catalog"),
+    IMPORTED("IMPORTED", "Imported Data")
 }
 
 enum class RiskLevel {

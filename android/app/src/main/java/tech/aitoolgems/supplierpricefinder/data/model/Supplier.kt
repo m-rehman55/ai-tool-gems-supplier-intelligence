@@ -13,5 +13,9 @@ data class Supplier(
     val riskScore: Float = 15f,
     val riskFlags: String = "",
     val notes: String = "",
-    val lastCheckedAt: Long? = null
+    val lastCheckedAt: Long? = null,
+    val source: String = "SEED_DATA",
+    val telegramChatId: Long? = null,
+    val lastSyncAt: Long? = null,
+    val hasActiveMenu: Boolean = false
 )

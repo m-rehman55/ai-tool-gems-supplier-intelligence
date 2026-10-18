@@ -61,6 +61,7 @@ class TelegramScanner(
     suspend fun scanSuppliersForTool(
         targetTool: String,
         targetSupplierId: Long? = null,
+        searchPolicy: SearchPolicy = SearchPolicy.FAST_LOOKUP,
         listener: ScanProgressListener? = null
     ): List<PriceObservation> = withContext(Dispatchers.IO) {
         isRunning = true
@@ -73,7 +74,7 @@ class TelegramScanner(
         }
 
         val trigger = if (targetSupplierId != null) "SINGLE_SUPPLIER_SCAN" else (if (targetTool.isEmpty()) "FULL_CATALOG_SCAN" else "SEARCH_TOOL_SCAN")
-        val runId = database.startScanRun(runUuid, trigger, suppliers.size)
+        val runId = database.startScanRun(runUuid, trigger, suppliers.size, searchPolicy.name)
         val targetQuery = targetTool.trim()
 
         try {
@@ -87,10 +88,11 @@ class TelegramScanner(
 
             // 1. If Telegram MTProto is authenticated, run genuine adaptive crawler
             if (tgManager.currentAuthState == TelegramAuthState.AUTHENTICATED) {
-                listener?.onSupplierScanning("CRAWLER", "Using genuine MTProto TDLib connection for ${suppliers.size} supplier(s)...")
+                listener?.onSupplierScanning("CRAWLER", "Using genuine MTProto TDLib connection (${searchPolicy.label}) for ${suppliers.size} supplier(s)...")
                 val crawlResults = adaptiveCrawler.executeCrawl(
                     suppliers = suppliers,
                     targetProductQuery = targetQuery,
+                    searchPolicy = searchPolicy,
                     runId = runId,
                     listener = object : AdaptiveCrawlListener {
                         override fun onStateChanged(supplierHandle: String, state: CrawlerState, message: String) {

@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private val allToolsCatalogList = mutableListOf<PriceObservation>()
     private val suppliersList = mutableListOf<Supplier>()
     private var currentFilterAccess: AccessType? = null
+    private var currentFilterSource: SupplierSource? = null
     private var currentActiveTab = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +67,11 @@ class MainActivity : AppCompatActivity() {
             showTelegramConfigDialog()
         }
         updateTelegramStatusChip()
+
+        // Sync Telegram Bots Action
+        binding.btnSyncTelegramBots.setOnClickListener {
+            syncTelegramBots()
+        }
 
         // Add Supplier Button in Action Bar
         binding.btnAddSupplierAction.setOnClickListener {
@@ -118,8 +124,15 @@ class MainActivity : AppCompatActivity() {
                 checkedIds.contains(R.id.chipFilterEdu) -> AccessType.EDU
                 else -> null
             }
+            currentFilterSource = when {
+                checkedIds.contains(R.id.chipFilterTgOnly) -> SupplierSource.TELEGRAM_DISCOVERY
+                checkedIds.contains(R.id.chipFilterSeedOnly) -> SupplierSource.SEED_DATA
+                else -> null
+            }
             if (currentActiveTab == 1) {
                 filterAndDisplayAllTools()
+            } else if (currentActiveTab == 2) {
+                loadSuppliersTab()
             } else {
                 filterAndDisplayResults()
             }
@@ -215,12 +228,21 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerViewResults.adapter = AllToolsAdapter(filtered)
     }
 
+    private fun getSelectedSearchPolicy(): SearchPolicy {
+        return if (binding.chipPolicyExhaustive.isChecked) {
+            SearchPolicy.EXHAUSTIVE_SCAN
+        } else {
+            SearchPolicy.FAST_LOOKUP
+        }
+    }
+
     private fun performLiveScan(toolName: String) {
+        val policy = getSelectedSearchPolicy()
         binding.progressBarScan.visibility = View.VISIBLE
         binding.layoutScanControls.visibility = View.VISIBLE
         binding.btnPauseScan.visibility = View.VISIBLE
         binding.btnResumeScan.visibility = View.GONE
-        binding.tvScanProgressStatus.text = "Starting live scanner for '$toolName' across configured bots..."
+        binding.tvScanProgressStatus.text = "Starting live scanner (${policy.label}) for '$toolName' across configured bots..."
 
         val initialCached = database.getObservationsForQuery(toolName)
         if (initialCached.isNotEmpty()) {
@@ -233,6 +255,7 @@ class MainActivity : AppCompatActivity() {
             val newlyExtracted = scanner.scanSuppliersForTool(
                 targetTool = toolName,
                 targetSupplierId = null,
+                searchPolicy = policy,
                 listener = createScanListener()
             )
 
@@ -253,16 +276,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performFullCatalogCrawl() {
+        val policy = getSelectedSearchPolicy()
         binding.progressBarScan.visibility = View.VISIBLE
         binding.layoutScanControls.visibility = View.VISIBLE
         binding.btnPauseScan.visibility = View.VISIBLE
         binding.btnResumeScan.visibility = View.GONE
-        binding.tvScanProgressStatus.text = "Starting full catalog crawl across all enabled supplier bots..."
+        binding.tvScanProgressStatus.text = "Starting full catalog crawl (${policy.label}) across all enabled supplier bots..."
 
         lifecycleScope.launch {
             val newlyExtracted = scanner.scanSuppliersForTool(
                 targetTool = "",
                 targetSupplierId = null,
+                searchPolicy = policy,
                 listener = createScanListener()
             )
 
@@ -378,10 +403,43 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerViewResults.adapter = ResultsAdapter(filtered)
     }
 
+    private fun syncTelegramBots() {
+        val tgManager = TelegramClientManager.getInstance(this)
+        if (tgManager.currentAuthState != TelegramAuthState.AUTHENTICATED) {
+            Toast.makeText(this, "Please authenticate Telegram first to sync account bots.", Toast.LENGTH_LONG).show()
+            showTelegramConfigDialog()
+            return
+        }
+
+        binding.tvScanProgressStatus.text = "Discovering bots from your Telegram account dialogs..."
+        binding.progressBarScan.visibility = View.VISIBLE
+
+        lifecycleScope.launch {
+            try {
+                val discovered = tgManager.discoverAccountBots()
+                val syncedCount = database.syncDiscoveredTelegramBots(discovered)
+                binding.progressBarScan.visibility = View.GONE
+                binding.tvScanProgressStatus.text = "Sync complete: Discovered ${discovered.size} bots ($syncedCount synced)."
+                Toast.makeText(this@MainActivity, "Synced ${discovered.size} bots from your Telegram account!", Toast.LENGTH_SHORT).show()
+                if (currentActiveTab == 2) {
+                    loadSuppliersTab()
+                }
+            } catch (e: Exception) {
+                binding.progressBarScan.visibility = View.GONE
+                binding.tvScanProgressStatus.text = "Failed to sync Telegram bots: ${e.message}"
+                Toast.makeText(this@MainActivity, "Sync error: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     private fun loadSuppliersTab() {
         suppliersList.clear()
-        suppliersList.addAll(database.getAllSuppliers())
-        binding.tvCatalogCountSummary.text = "Active Supplier Directory: ${suppliersList.size} Bots"
+        val all = database.getAllSuppliers(currentFilterSource)
+        suppliersList.addAll(all)
+        val counts = database.getSuppliersCountBySource()
+        val tgCount = counts[SupplierSource.TELEGRAM_DISCOVERY] ?: 0
+        val seedCount = counts[SupplierSource.SEED_DATA] ?: 0
+        binding.tvCatalogCountSummary.text = "Suppliers: ${suppliersList.size} ($tgCount Telegram, $seedCount Seed)"
         binding.recyclerViewResults.adapter = SuppliersAdapter(suppliersList,
             onToggle = { supplier, isEnabled ->
                 database.setSupplierEnabled(supplier.id, isEnabled)
@@ -395,13 +453,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performSupplierSpecificScan(supplier: Supplier) {
+        val policy = getSelectedSearchPolicy()
         binding.progressBarScan.visibility = View.VISIBLE
-        binding.tvScanProgressStatus.text = "Targeted scan: ${supplier.primaryHandle}..."
+        binding.tvScanProgressStatus.text = "Targeted scan (${policy.label}): ${supplier.primaryHandle}..."
 
         lifecycleScope.launch {
             val newlyExtracted = scanner.scanSuppliersForTool(
                 targetTool = "",
                 targetSupplierId = supplier.id,
+                searchPolicy = policy,
                 listener = object : ScanProgressListener {
                     override fun onSupplierScanning(supplierHandle: String, message: String) {
                         runOnUiThread {
@@ -862,6 +922,7 @@ class MainActivity : AppCompatActivity() {
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val tvName: TextView = view.findViewById(R.id.tvSupplierName)
             val tvHandle: TextView = view.findViewById(R.id.tvSupplierHandle)
+            val tvSource: TextView = view.findViewById(R.id.tvSupplierSource)
             val tvStatus: TextView = view.findViewById(R.id.tvSupplierStatus)
             val btnTest: View = view.findViewById(R.id.btnTestSupplier)
             val switchActive: com.google.android.material.switchmaterial.SwitchMaterial = view.findViewById(R.id.switchSupplierActive)
@@ -876,6 +937,18 @@ class MainActivity : AppCompatActivity() {
             val supplier = list[position]
             holder.tvName.text = supplier.canonicalName
             holder.tvHandle.text = supplier.primaryHandle
+            val sourceLabel = when (supplier.source) {
+                SupplierSource.TELEGRAM_DISCOVERY -> "🤖 Telegram Discovered"
+                SupplierSource.SEED_DATA -> "📦 Seed Catalog"
+                SupplierSource.IMPORTED -> "📥 Imported Catalog"
+            }
+            holder.tvSource.text = sourceLabel
+            holder.tvSource.setTextColor(
+                if (supplier.source == SupplierSource.TELEGRAM_DISCOVERY)
+                    getColor(R.color.badge_verified_text)
+                else
+                    getColor(R.color.accent)
+            )
             holder.tvStatus.text = "Reliability: ${supplier.reliabilityScore.toInt()}% | ${supplier.notes.take(45)}"
             holder.switchActive.isChecked = supplier.isEnabled
 

@@ -61,10 +61,12 @@ class AdaptiveBotCrawler(
     suspend fun executeCrawl(
         suppliers: List<Supplier>,
         targetProductQuery: String = "",
+        searchPolicy: SearchPolicy = SearchPolicy.FAST_LOOKUP,
         runId: Long = 0,
         listener: AdaptiveCrawlListener? = null
     ): List<PriceObservation> = withContext(Dispatchers.IO) {
         val allExtractedOffers = mutableListOf<PriceObservation>()
+        val processedSupplierIds = mutableSetOf<Long>()
         isCancelled.set(false)
         isPaused.set(false)
 
@@ -80,10 +82,16 @@ class AdaptiveBotCrawler(
                 if (isCancelled.get()) break
             }
 
+            // Guaranteed deduplication: never process the same supplier twice in one scan run
+            if (!processedSupplierIds.add(supplier.id)) {
+                Log.d(TAG, "Skipping duplicate supplier in scan run: ${supplier.canonicalName} (id=${supplier.id})")
+                continue
+            }
+
             listener?.onProgressUpdate("Inspecting ${supplier.canonicalName} (${index + 1}/$totalSuppliers)...", index, totalSuppliers)
             listener?.onStateChanged(supplier.primaryHandle, CrawlerState.OPENING_BOT, "Starting adaptive crawler for ${supplier.canonicalName}...")
 
-            val supplierOffers = crawlSingleSupplier(supplier, targetProductQuery, runId, listener)
+            val supplierOffers = crawlSingleSupplier(supplier, targetProductQuery, searchPolicy, runId, listener)
             allExtractedOffers.addAll(supplierOffers)
 
             if (supplierOffers.isNotEmpty()) {
@@ -104,6 +112,7 @@ class AdaptiveBotCrawler(
     suspend fun crawlSingleSupplier(
         supplier: Supplier,
         targetProductQuery: String,
+        searchPolicy: SearchPolicy = SearchPolicy.FAST_LOOKUP,
         runId: Long,
         listener: AdaptiveCrawlListener?
     ): List<PriceObservation> = withContext(Dispatchers.IO) {
@@ -146,26 +155,39 @@ class AdaptiveBotCrawler(
 
         val chatId = chat.id
 
-        // 2. Start Bot
-        currentState = CrawlerState.START_SENT
-        listener?.onStateChanged(supplier.primaryHandle, currentState, "Sending /start command to ${chat.title}...")
-        emitTimeline("/start", CrawlerButtonType.REPLY_KEYBOARD_TEXT, "Initialize bot conversation", "SENT")
+        // 2. Intelligent initialization: check if bot already has active conversation history with replyMarkup
+        var currentMenu: CrawlerMenu? = null
+        val existingHistory = telegramManager.fetchChatHistory(chatId, limit = 5)
+        val lastMessageWithMenu = existingHistory.firstOrNull { it.replyMarkup != null }
 
-        val startSent = telegramManager.sendBotTextMessage(chatId, "/start")
-        if (startSent == null) {
-            currentState = CrawlerState.NETWORK_ERROR
-            listener?.onStateChanged(supplier.primaryHandle, currentState, "Failed to send /start to bot.")
-            emitTimeline("/start", CrawlerButtonType.REPLY_KEYBOARD_TEXT, "Network dispatch error", "FAILED")
-            return@withContext offers
-        }
+        if (lastMessageWithMenu != null) {
+            // Existing bot with active menu: DO NOT send /start
+            currentState = CrawlerState.RESUMING_EXISTING_MENU
+            listener?.onStateChanged(supplier.primaryHandle, currentState, "Resuming existing active menu for ${chat.title} without /start...")
+            emitTimeline("ResumeActiveMenu", CrawlerButtonType.UNKNOWN, "Found active replyMarkup in chat history; reusing state", "RESUMED")
+            currentMenu = parseTdMessageToMenu(lastMessageWithMenu)
+        } else {
+            // New or empty bot conversation: genuine initialization required
+            currentState = CrawlerState.START_SENT
+            listener?.onStateChanged(supplier.primaryHandle, currentState, "Initializing bot ${chat.title} with /start...")
+            emitTimeline("/start", CrawlerButtonType.REPLY_KEYBOARD_TEXT, "Initialize new/empty bot conversation", "SENT")
 
-        // Wait for bot response with bounded timeout
-        var currentMenu = waitForNextBotMenu(chatId, timeoutMs = 7000)
-        if (currentMenu == null) {
-            currentState = CrawlerState.RESPONSE_TIMEOUT
-            listener?.onStateChanged(supplier.primaryHandle, currentState, "Bot @$cleanHandle did not respond in time.")
-            emitTimeline("WaitResponse", CrawlerButtonType.UNKNOWN, "Response timed out after 7s", "TIMEOUT")
-            return@withContext offers
+            val startSent = telegramManager.sendBotTextMessage(chatId, "/start")
+            if (startSent == null) {
+                currentState = CrawlerState.NETWORK_ERROR
+                listener?.onStateChanged(supplier.primaryHandle, currentState, "Failed to send /start to bot.")
+                emitTimeline("/start", CrawlerButtonType.REPLY_KEYBOARD_TEXT, "Network dispatch error", "FAILED")
+                return@withContext offers
+            }
+
+            // Wait for bot response with bounded timeout
+            currentMenu = waitForNextBotMenu(chatId, timeoutMs = 7000)
+            if (currentMenu == null) {
+                currentState = CrawlerState.RESPONSE_TIMEOUT
+                listener?.onStateChanged(supplier.primaryHandle, currentState, "Bot @$cleanHandle did not respond in time.")
+                emitTimeline("WaitResponse", CrawlerButtonType.UNKNOWN, "Response timed out after 7s", "TIMEOUT")
+                return@withContext offers
+            }
         }
 
         // 3. Adaptive Traversal Loop
@@ -188,6 +210,14 @@ class AdaptiveBotCrawler(
                     database.saveObservation(obs)
                     listener?.onVariantDiscovered(obs)
                 }
+            }
+
+            // Check if fast lookup policy is already satisfied
+            if (searchPolicy == SearchPolicy.FAST_LOOKUP && offers.isNotEmpty()) {
+                currentState = CrawlerState.SEARCH_POLICY_SATISFIED
+                listener?.onStateChanged(supplier.primaryHandle, currentState, "Fast lookup complete: ${offers.size} offer(s) found for ${supplier.canonicalName}.")
+                emitTimeline("FastLookup", CrawlerButtonType.UNKNOWN, "Fast lookup policy satisfied", "SATISFIED")
+                break
             }
 
             // A. Check for Language Selection Screen
@@ -316,6 +346,8 @@ class AdaptiveBotCrawler(
             val navigableButtons = activeMenu.buttons.flatten().filter { btn ->
                 val safety = SafetyBoundary.checkButtonSafety(btn.text, btn.payload, btn.type, fingerprint)
                 safety.isSafe && !btn.text.contains("back", ignoreCase = true) && !btn.text.contains("main menu", ignoreCase = true)
+            }.sortedByDescending { btn ->
+                PlanMatcher.rankNavigationButton(btn.text, targetProductQuery)
             }
 
             if (navigableButtons.isNotEmpty()) {
@@ -376,6 +408,13 @@ class AdaptiveBotCrawler(
                             executeButtonAction(chatId, nextMenu, backBtn)
                         }
                         traversedAny = true
+
+                        // Check if fast lookup policy is already satisfied after exploring product
+                        if (searchPolicy == SearchPolicy.FAST_LOOKUP && offers.isNotEmpty()) {
+                            currentState = CrawlerState.SEARCH_POLICY_SATISFIED
+                            emitTimeline("FastLookup", CrawlerButtonType.UNKNOWN, "Target discovered in catalog; fast lookup satisfied", "SATISFIED")
+                            break
+                        }
                     }
                 }
 
@@ -399,8 +438,13 @@ class AdaptiveBotCrawler(
             break
         }
 
-        currentState = if (offers.isNotEmpty()) CrawlerState.COMPLETED else CrawlerState.PARTIAL
-        listener?.onStateChanged(supplier.primaryHandle, currentState, "Completed crawl for ${supplier.canonicalName}. Found ${offers.size} offer(s).")
+        currentState = when {
+            offers.isNotEmpty() && searchPolicy == SearchPolicy.FAST_LOOKUP -> CrawlerState.SEARCH_POLICY_SATISFIED
+            offers.isNotEmpty() -> CrawlerState.COMPLETED
+            actionCount > 0 -> CrawlerState.SEARCH_EXHAUSTED_NOT_FOUND
+            else -> CrawlerState.PARTIAL
+        }
+        listener?.onStateChanged(supplier.primaryHandle, currentState, "Finished crawl for ${supplier.canonicalName}. Status: ${currentState.name}, Found ${offers.size} offer(s).")
         database.clearCheckpoint(supplier.id)
 
         offers
@@ -649,7 +693,7 @@ class AdaptiveBotCrawler(
                             amountPkr = pkrAmount,
                             warranty = if (line.contains("FW", ignoreCase = true) || line.contains("Warranty", ignoreCase = true)) "Full Warranty" else "Standard Bot Catalog",
                             stockStatus = if (line.contains("out of stock", ignoreCase = true)) "Out of Stock" else "Available",
-                            verificationStatus = VerificationStatus.LIVE_OBSERVED_UNVERIFIED,
+                            verificationStatus = VerificationStatus.LIVE_OBSERVED,
                             riskLevel = RiskLevel.LOW,
                             captureMethod = "AUTHENTICATED_TDLIB_ADAPTIVE_CRAWLER",
                             originalRawText = line.trim(),

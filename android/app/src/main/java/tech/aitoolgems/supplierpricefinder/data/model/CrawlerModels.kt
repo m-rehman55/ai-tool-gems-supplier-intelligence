@@ -26,6 +26,11 @@ enum class CrawlerState {
     RATE_LIMITED,
     RESPONSE_TIMEOUT,
     NETWORK_ERROR,
+    RESUMING_EXISTING_MENU,
+    BRANCH_EXHAUSTED,
+    BACKTRACKING,
+    SEARCH_EXHAUSTED_NOT_FOUND,
+    SEARCH_POLICY_SATISFIED,
     BOT_NOT_FOUND,
     BOT_UNAVAILABLE,
     BLOCKED_TRANSACTION,
@@ -92,7 +97,21 @@ data class ScanRun(
     var blockedSuppliers: Int = 0,
     var totalOffersFound: Int = 0,
     var totalVariantsFound: Int = 0,
+    var searchPolicy: String = "FAST_LOOKUP",
     var errorLog: String = ""
+)
+
+/**
+ * Model representing an eligible bot discovered from the user's authentic Telegram account dialogs.
+ */
+data class DiscoveredTelegramBot(
+    val chatId: Long,
+    val userId: Long,
+    val title: String,
+    val username: String,
+    val hasActiveMenu: Boolean = false,
+    val lastMessageText: String? = null,
+    val lastMessageDate: Long = 0L
 )
 
 /**

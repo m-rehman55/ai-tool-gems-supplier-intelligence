@@ -57,24 +57,25 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.4
-          name: "Telegram Supplier Price Finder v1.0.4 (Adaptive Bot Crawler & Catalog Extraction)"
+          tag_name: v1.0.5
+          name: "Telegram Supplier Price Finder v1.0.5 (Telegram-Native Discovery & Autonomous Bot Intelligence)"
           draft: false
           prerelease: false
           generate_release_notes: false
           body: |
-            ### 📱 Telegram Supplier Price Finder v1.0.4 (Direct APK Download)
+            ### 📱 Telegram Supplier Price Finder v1.0.5 (Direct APK Download)
 
-            Direct `.apk` file for Android phones with Adaptive Telegram Bot Crawler:
-            - **Adaptive Bot Crawler**: Intelligently navigates bot menus (reply & inline keyboards, message edits, pagination, back-navigation).
-            - **Multi-Variant Extraction**: Safely extracts all pricing tiers (1-day, 1-month, 4-month, 1-year) with durable source evidence.
-            - **Deterministic Safety Boundary**: Hard-blocks payment/checkout/deposit buttons (`Buy Now`, `Pay`, `Checkout`); bare `Buy` flags an interactive approval dialog once and stores a verified playbook.
-            - **Gate & Side-Effect Approval**: Detects required group/channel gates and requires explicit user consent before any account actions.
-            - **Truthful Provenance**: Distinguishes `LIVE_OBSERVED_UNVERIFIED`, `CACHED`, `SEED_CATALOG`, and `VERIFIED` statuses.
+            Direct `.apk` file for Android phones with Telegram-Native Discovery & Autonomous Product Intelligence:
+            - **Telegram-Native Bot Discovery**: Discovers eligible supplier bots directly from your authenticated Telegram account dialogs (`ChatTypePrivate` + `UserTypeBot`). Segregates seed demo suppliers from live account bots.
+            - **Existing Bot vs New Bot**: Checks chat history first; resumes active keyboard menus without sending redundant `/start` to existing bots.
+            - **Target Product Aliases & Ranked Menus**: Ranks navigation buttons according to target tool aliases (e.g. Canva Pro, ChatGPT Plus, CapCut Pro) to explore relevant branches first.
+            - **Search Policies**: Supports `⚡ Fast Lookup` (stops once target product variants are extracted) and `🌐 Exhaustive Crawl` (explores all safe branches and pagination).
+            - **Honest Search Exhaustion**: Never skips unfinished bots; records truthful states (`SEARCH_POLICY_SATISFIED`, `SEARCH_EXHAUSTED_NOT_FOUND`, `PARTIAL`, `MEMBERSHIP_GATE`).
+            - **One Bot Per Scan Deduplication**: Guarantees each supplier bot is processed at most once per scan run.
             - **Optimized ARM APK**: Pre-packaged with native TDLib binaries for arm64-v8a and armeabi-v7a.
 
-            #### ⚠️ Important Installation Note:
-            If you previously installed an older version on your phone, **please uninstall (delete) the old app first**, then download and install `app-debug.apk`.
+            #### ⚠️ Installation Note:
+            If you previously installed an older version on your phone, **uninstall (delete) the old app first**, then download and install `app-debug.apk`.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

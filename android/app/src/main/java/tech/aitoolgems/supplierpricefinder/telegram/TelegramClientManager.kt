@@ -66,6 +66,8 @@ class TelegramClientManager private constructor(private val context: Context) {
 
     private val botMessageListeners = ConcurrentHashMap<Long, (TdApi.Message) -> Unit>()
     private val botUpdateListeners = ConcurrentHashMap<Long, (TdApi.Object) -> Unit>()
+    val knownChats = ConcurrentHashMap<Long, TdApi.Chat>()
+    val knownUsers = ConcurrentHashMap<Long, TdApi.User>()
 
     private fun notifyState(state: TelegramAuthState, message: String) {
         currentAuthState = state
@@ -143,6 +145,18 @@ class TelegramClientManager private constructor(private val context: Context) {
             }
             is TdApi.UpdateConnectionState -> {
                 handleConnectionState(update.state)
+            }
+            is TdApi.UpdateNewChat -> {
+                knownChats[update.chat.id] = update.chat
+            }
+            is TdApi.UpdateChatLastMessage -> {
+                val existing = knownChats[update.chatId]
+                if (existing != null) {
+                    existing.lastMessage = update.lastMessage
+                }
+            }
+            is TdApi.UpdateUser -> {
+                knownUsers[update.user.id] = update.user
             }
             is TdApi.UpdateNewMessage -> {
                 val msg = update.message
@@ -261,7 +275,7 @@ class TelegramClientManager private constructor(private val context: Context) {
             "en", // systemLanguageCode
             "Android " + android.os.Build.MODEL, // deviceModel
             android.os.Build.VERSION.RELEASE, // systemVersion
-            "1.0.4" // applicationVersion
+            "1.0.5" // applicationVersion
         )
 
         client?.send(params) { result ->
@@ -536,6 +550,141 @@ class TelegramClientManager private constructor(private val context: Context) {
         currentClient.send(TdApi.GetMessage(chatId, messageId)) { result ->
             callback(if (result is TdApi.Message) result else null)
         }
+    }
+
+    suspend fun fetchChatHistory(chatId: Long, limit: Int = 5): List<TdApi.Message> {
+        val currentClient = client ?: return emptyList()
+        val res = suspendAsync<TdApi.Object> { cb ->
+            currentClient.send(TdApi.GetChatHistory(chatId, 0, 0, limit, false), cb)
+        }
+        return if (res is TdApi.Messages) res.messages.toList() else emptyList()
+    }
+
+    suspend fun getChatSync(chatId: Long): TdApi.Chat? {
+        val currentClient = client ?: return null
+        val cached = knownChats[chatId]
+        if (cached != null) return cached
+        val res = suspendAsync<TdApi.Object> { cb ->
+            currentClient.send(TdApi.GetChat(chatId), cb)
+        }
+        return if (res is TdApi.Chat) {
+            knownChats[chatId] = res
+            res
+        } else null
+    }
+
+    suspend fun discoverAccountBots(): List<DiscoveredTelegramBot> = withContext(Dispatchers.IO) {
+        val currentClient = client
+        if (currentClient == null || currentAuthState != TelegramAuthState.AUTHENTICATED) {
+            return@withContext emptyList()
+        }
+
+        // 1. Request chats from TDLib to populate knownChats
+        try {
+            suspendAsync<TdApi.Object> { cb ->
+                currentClient.send(TdApi.LoadChats(TdApi.ChatListMain(), 100), cb)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "LoadChats notice: ${e.message}")
+        }
+
+        val chatsList = mutableListOf<TdApi.Chat>()
+        try {
+            val chatsResult = suspendAsync<TdApi.Object> { cb ->
+                currentClient.send(TdApi.GetChats(TdApi.ChatListMain(), 100), cb)
+            }
+            if (chatsResult is TdApi.Chats) {
+                for (cid in chatsResult.chatIds) {
+                    val c = knownChats[cid] ?: (suspendAsync<TdApi.Object> { cb ->
+                        currentClient.send(TdApi.GetChat(cid), cb)
+                    } as? TdApi.Chat)?.also { knownChats[cid] = it }
+                    if (c != null && chatsList.none { it.id == c.id }) {
+                        chatsList.add(c)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "GetChats notice: ${e.message}")
+        }
+
+        // Add any chats already captured in knownChats
+        for (c in knownChats.values) {
+            if (chatsList.none { it.id == c.id }) {
+                chatsList.add(c)
+            }
+        }
+
+        // 2. Filter for actual Telegram Bots: Private Chat -> User -> UserTypeBot
+        val discoveredBots = mutableListOf<DiscoveredTelegramBot>()
+        for (chat in chatsList) {
+            val privateType = chat.type as? TdApi.ChatTypePrivate ?: continue
+            val userId = privateType.userId
+
+            val user = knownUsers[userId] ?: (suspendAsync<TdApi.Object> { cb ->
+                currentClient.send(TdApi.GetUser(userId), cb)
+            } as? TdApi.User)?.also { knownUsers[userId] = it } ?: continue
+
+            // Exclude regular users, channels, groups
+            if (user.type !is TdApi.UserTypeBot) {
+                continue
+            }
+
+            val username = extractUsernameFromTdUser(user)
+            val title = if (chat.title.isNotBlank()) {
+                chat.title
+            } else {
+                "${user.firstName} ${user.lastName}".trim().ifBlank { username }
+            }
+
+            val lastMsg = chat.lastMessage
+            val hasActiveMenu = lastMsg?.replyMarkup != null
+            val lastText = when (val c = lastMsg?.content) {
+                is TdApi.MessageText -> c.text.text
+                is TdApi.MessagePhoto -> c.caption.text
+                else -> null
+            }
+            val lastDate = lastMsg?.date?.toLong() ?: 0L
+
+            discoveredBots.add(
+                DiscoveredTelegramBot(
+                    chatId = chat.id,
+                    userId = userId,
+                    title = title,
+                    username = username,
+                    hasActiveMenu = hasActiveMenu,
+                    lastMessageText = lastText,
+                    lastMessageDate = lastDate
+                )
+            )
+        }
+
+        discoveredBots
+    }
+
+    private fun extractUsernameFromTdUser(user: TdApi.User): String {
+        try {
+            val usernamesField = user.javaClass.getField("usernames")
+            val usernamesObj = usernamesField.get(user)
+            if (usernamesObj != null) {
+                val activeField = usernamesObj.javaClass.getField("activeUsernames")
+                val activeList = activeField.get(usernamesObj) as? Array<*>
+                if (!activeList.isNullOrEmpty()) {
+                    return activeList[0].toString()
+                }
+            }
+        } catch (t: Throwable) {
+            // Fallback
+        }
+        try {
+            val usernameField = user.javaClass.getField("username")
+            val u = usernameField.get(user) as? String
+            if (!u.isNullOrBlank()) {
+                return u
+            }
+        } catch (t: Throwable) {
+            // Fallback
+        }
+        return ""
     }
 
     private suspend inline fun <reified T : TdApi.Object> suspendAsync(

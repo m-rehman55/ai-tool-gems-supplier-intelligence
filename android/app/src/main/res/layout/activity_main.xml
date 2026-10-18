@@ -198,6 +198,56 @@
 
                 </LinearLayout>
 
+                <!-- Search Policy Selector (Fast Lookup vs Exhaustive Crawl) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Policy: "
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupPolicy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipPolicyFast"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:checked="true"
+                            android:text="⚡ Fast Lookup"
+                            android:textColor="@color/text_primary"
+                            android:textSize="10sp"
+                            app:chipBackgroundColor="@color/card_background"
+                            app:chipStrokeColor="@color/divider"
+                            app:chipStrokeWidth="1dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipPolicyExhaustive"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="🌐 Exhaustive Crawl"
+                            android:textColor="@color/text_primary"
+                            android:textSize="10sp"
+                            app:chipBackgroundColor="@color/card_background"
+                            app:chipStrokeColor="@color/divider"
+                            app:chipStrokeWidth="1dp" />
+
+                    </com.google.android.material.chip.ChipGroup>
+
+                </LinearLayout>
+
                 <!-- Live Progress indicator -->
                 <ProgressBar
                     android:id="@+id/progressBarScan"
@@ -325,6 +375,28 @@
                     app:chipStrokeColor="@color/divider"
                     app:chipStrokeWidth="1dp" />
 
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipFilterTgOnly"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🤖 TG Discovered"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipFilterSeedOnly"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📦 Seed / Demo"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
+
             </com.google.android.material.chip.ChipGroup>
 
         </HorizontalScrollView>
@@ -444,6 +516,18 @@
                 android:textColor="@color/primary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSyncTelegramBots"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="6dp"
+                android:paddingHorizontal="10dp"
+                android:text="🔄 Sync TG Bots"
+                android:textColor="@color/primary"
+                android:textSize="11sp"
+                app:strokeColor="@color/primary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddSupplierAction"

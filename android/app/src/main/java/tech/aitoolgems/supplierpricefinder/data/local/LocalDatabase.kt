@@ -10,7 +10,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
 
     companion object {
         const val DATABASE_NAME = "supplier_price_finder.db"
-        const val DATABASE_VERSION = 4
+        const val DATABASE_VERSION = 5
 
         const val TABLE_SUPPLIERS = "suppliers"
         const val TABLE_OBSERVATIONS = "price_observations"
@@ -37,7 +37,11 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
                 risk_score REAL DEFAULT 15.0,
                 risk_flags TEXT,
                 notes TEXT,
-                last_checked_at INTEGER
+                last_checked_at INTEGER,
+                source TEXT DEFAULT 'SEED_DATA',
+                telegram_chat_id INTEGER,
+                last_sync_at INTEGER,
+                has_active_menu INTEGER DEFAULT 0
             )
         """.trimIndent())
 
@@ -186,6 +190,17 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
         if (oldVersion < 4) {
             createAdvancedCrawlerTables(db)
         }
+        if (oldVersion < 5) {
+            try {
+                db.execSQL("ALTER TABLE $TABLE_SUPPLIERS ADD COLUMN source TEXT DEFAULT 'SEED_DATA'")
+                db.execSQL("ALTER TABLE $TABLE_SUPPLIERS ADD COLUMN telegram_chat_id INTEGER")
+                db.execSQL("ALTER TABLE $TABLE_SUPPLIERS ADD COLUMN last_sync_at INTEGER")
+                db.execSQL("ALTER TABLE $TABLE_SUPPLIERS ADD COLUMN has_active_menu INTEGER DEFAULT 0")
+                db.execSQL("ALTER TABLE $TABLE_SCAN_RUNS ADD COLUMN search_policy TEXT DEFAULT 'FAST_LOOKUP'")
+            } catch (e: Exception) {
+                // Ignore if column already exists
+            }
+        }
     }
 
     private fun seedInitialData(db: SQLiteDatabase) {
@@ -248,12 +263,28 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
         }
     }
 
-    fun getAllSuppliers(): List<Supplier> {
+    fun getAllSuppliers(filterSource: String? = null): List<Supplier> {
         val list = mutableListOf<Supplier>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_SUPPLIERS ORDER BY canonical_name ASC", null)
+        val query = when (filterSource?.uppercase()) {
+            "TELEGRAM", "TELEGRAM_DISCOVERY" -> "SELECT * FROM $TABLE_SUPPLIERS WHERE source = 'TELEGRAM_DISCOVERY' ORDER BY canonical_name ASC"
+            "SEED", "SEED_DATA" -> "SELECT * FROM $TABLE_SUPPLIERS WHERE source = 'SEED_DATA' ORDER BY canonical_name ASC"
+            "IMPORTED" -> "SELECT * FROM $TABLE_SUPPLIERS WHERE source = 'IMPORTED' ORDER BY canonical_name ASC"
+            else -> "SELECT * FROM $TABLE_SUPPLIERS ORDER BY canonical_name ASC"
+        }
+        val cursor = db.rawQuery(query, null)
         cursor.use { c ->
+            val sourceIdx = c.getColumnIndex("source")
+            val tgChatIdIdx = c.getColumnIndex("telegram_chat_id")
+            val lastSyncIdx = c.getColumnIndex("last_sync_at")
+            val activeMenuIdx = c.getColumnIndex("has_active_menu")
+
             while (c.moveToNext()) {
+                val sourceVal = if (sourceIdx >= 0 && !c.isNull(sourceIdx)) c.getString(sourceIdx) else "SEED_DATA"
+                val tgChatIdVal = if (tgChatIdIdx >= 0 && !c.isNull(tgChatIdIdx)) c.getLong(tgChatIdIdx) else null
+                val lastSyncVal = if (lastSyncIdx >= 0 && !c.isNull(lastSyncIdx)) c.getLong(lastSyncIdx) else null
+                val activeMenuVal = if (activeMenuIdx >= 0) c.getInt(activeMenuIdx) == 1 else false
+
                 list.add(
                     Supplier(
                         id = c.getLong(c.getColumnIndexOrThrow("id")),
@@ -268,12 +299,75 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
                         riskScore = c.getFloat(c.getColumnIndexOrThrow("risk_score")),
                         riskFlags = c.getString(c.getColumnIndexOrThrow("risk_flags")) ?: "",
                         notes = c.getString(c.getColumnIndexOrThrow("notes")) ?: "",
-                        lastCheckedAt = if (c.isNull(c.getColumnIndexOrThrow("last_checked_at"))) null else c.getLong(c.getColumnIndexOrThrow("last_checked_at"))
+                        lastCheckedAt = if (c.isNull(c.getColumnIndexOrThrow("last_checked_at"))) null else c.getLong(c.getColumnIndexOrThrow("last_checked_at")),
+                        source = sourceVal,
+                        telegramChatId = tgChatIdVal,
+                        lastSyncAt = lastSyncVal,
+                        hasActiveMenu = activeMenuVal
                     )
                 )
             }
         }
         return list
+    }
+
+    fun syncDiscoveredTelegramBots(bots: List<DiscoveredTelegramBot>): Int {
+        val db = writableDatabase
+        var syncedCount = 0
+        val now = System.currentTimeMillis()
+        for (bot in bots) {
+            val handle = if (bot.username.isNotBlank()) "@${bot.username.removePrefix("@")}" else "@bot_${bot.chatId}"
+            val canonicalName = if (bot.title.isNotBlank()) bot.title else handle
+
+            // Check existing by telegram_chat_id or primary_handle or canonical_name
+            val normHandle = handle.trim().removePrefix("@").lowercase(java.util.Locale.ROOT)
+            val cursor = db.rawQuery(
+                "SELECT id FROM $TABLE_SUPPLIERS WHERE telegram_chat_id = ? OR lower(replace(primary_handle, '@', '')) = ? OR canonical_name = ?",
+                arrayOf(bot.chatId.toString(), normHandle, canonicalName)
+            )
+            var existingId: Long? = null
+            cursor.use {
+                if (it.moveToFirst()) {
+                    existingId = it.getLong(0)
+                }
+            }
+
+            val cv = ContentValues().apply {
+                put("canonical_name", canonicalName)
+                put("primary_handle", handle)
+                put("entity_type", "BOT")
+                put("source", "TELEGRAM_DISCOVERY")
+                put("telegram_chat_id", bot.chatId)
+                put("last_sync_at", now)
+                put("has_active_menu", if (bot.hasActiveMenu) 1 else 0)
+                put("is_enabled", 1)
+            }
+
+            if (existingId != null) {
+                db.update(TABLE_SUPPLIERS, cv, "id = ?", arrayOf(existingId.toString()))
+            } else {
+                cv.put("reliability_score", 85.0f)
+                cv.put("risk_score", 10.0f)
+                cv.put("supported_currencies", "USD,USDT,PKR")
+                db.insert(TABLE_SUPPLIERS, null, cv)
+            }
+            syncedCount++
+        }
+        return syncedCount
+    }
+
+    fun getSuppliersCountBySource(): Map<String, Int> {
+        val db = readableDatabase
+        val map = mutableMapOf<String, Int>()
+        val cursor = db.rawQuery("SELECT source, COUNT(*) FROM $TABLE_SUPPLIERS GROUP BY source", null)
+        cursor.use { c ->
+            while (c.moveToNext()) {
+                val source = c.getString(0) ?: "SEED_DATA"
+                val count = c.getInt(1)
+                map[source] = count
+            }
+        }
+        return map
     }
 
     fun setSupplierEnabled(supplierId: Long, enabled: Boolean) {
@@ -299,6 +393,10 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             put("risk_flags", supplier.riskFlags)
             put("notes", supplier.notes)
             put("last_checked_at", System.currentTimeMillis())
+            put("source", supplier.source)
+            put("telegram_chat_id", supplier.telegramChatId)
+            put("last_sync_at", supplier.lastSyncAt)
+            put("has_active_menu", if (supplier.hasActiveMenu) 1 else 0)
         }
 
         // Normalized handle comparison to avoid orphaned observations or ID recreation
@@ -497,7 +595,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
     // ADVANCED CRAWLER PERSISTENCE METHODS
     // =========================================================================
 
-    fun startScanRun(runUuid: String, trigger: String, totalSuppliers: Int): Long {
+    fun startScanRun(runUuid: String, trigger: String, totalSuppliers: Int, searchPolicy: String = "FAST_LOOKUP"): Long {
         val db = writableDatabase
         val cv = ContentValues().apply {
             put("run_uuid", runUuid)
@@ -510,6 +608,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             put("blocked_suppliers", 0)
             put("total_offers_found", 0)
             put("total_variants_found", 0)
+            put("search_policy", searchPolicy)
             put("error_log", "")
         }
         return db.insert(TABLE_SCAN_RUNS, null, cv)
@@ -525,6 +624,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             put("blocked_suppliers", scanRun.blockedSuppliers)
             put("total_offers_found", scanRun.totalOffersFound)
             put("total_variants_found", scanRun.totalVariantsFound)
+            put("search_policy", scanRun.searchPolicy)
             put("error_log", scanRun.errorLog)
         }
         db.update(TABLE_SCAN_RUNS, cv, "id = ?", arrayOf(scanRun.id.toString()))
@@ -535,6 +635,8 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
         val cursor = db.rawQuery("SELECT * FROM $TABLE_SCAN_RUNS ORDER BY started_at DESC LIMIT 1", null)
         cursor.use { c ->
             if (c.moveToFirst()) {
+                val policyIdx = c.getColumnIndex("search_policy")
+                val policyVal = if (policyIdx >= 0 && !c.isNull(policyIdx)) c.getString(policyIdx) else "FAST_LOOKUP"
                 return ScanRun(
                     id = c.getLong(c.getColumnIndexOrThrow("id")),
                     runUuid = c.getString(c.getColumnIndexOrThrow("run_uuid")),
@@ -548,6 +650,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
                     blockedSuppliers = c.getInt(c.getColumnIndexOrThrow("blocked_suppliers")),
                     totalOffersFound = c.getInt(c.getColumnIndexOrThrow("total_offers_found")),
                     totalVariantsFound = c.getInt(c.getColumnIndexOrThrow("total_variants_found")),
+                    searchPolicy = policyVal,
                     errorLog = c.getString(c.getColumnIndexOrThrow("error_log")) ?: ""
                 )
             }
@@ -560,7 +663,9 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
         val db = readableDatabase
         val cursor = db.rawQuery("SELECT * FROM $TABLE_SCAN_RUNS ORDER BY started_at DESC", null)
         cursor.use { c ->
+            val policyIdx = c.getColumnIndex("search_policy")
             while (c.moveToNext()) {
+                val policyVal = if (policyIdx >= 0 && !c.isNull(policyIdx)) c.getString(policyIdx) else "FAST_LOOKUP"
                 list.add(
                     ScanRun(
                         id = c.getLong(c.getColumnIndexOrThrow("id")),
@@ -575,6 +680,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
                         blockedSuppliers = c.getInt(c.getColumnIndexOrThrow("blocked_suppliers")),
                         totalOffersFound = c.getInt(c.getColumnIndexOrThrow("total_offers_found")),
                         totalVariantsFound = c.getInt(c.getColumnIndexOrThrow("total_variants_found")),
+                        searchPolicy = policyVal,
                         errorLog = c.getString(c.getColumnIndexOrThrow("error_log")) ?: ""
                     )
                 )

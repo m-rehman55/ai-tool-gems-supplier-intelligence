@@ -58,6 +58,69 @@ object PlanMatcher {
         }
     }
 
+    val PRODUCT_ALIASES: Map<String, List<String>> = mapOf(
+        "chatgpt plus" to listOf("chatgpt", "chat gpt", "gpt-4", "gpt4", "gpt plus", "chatgpt plus", "openai", "gpt"),
+        "canva pro" to listOf("canva", "canva pro", "canva premium", "canva edu", "canva team"),
+        "google gemini" to listOf("gemini", "gemini pro", "gemini advanced", "google gemini", "google one"),
+        "gemini pro" to listOf("gemini", "gemini pro", "gemini advanced", "google gemini", "google one"),
+        "claude pro" to listOf("claude", "claude pro", "claude 3", "claude ai", "anthropic", "sonnet"),
+        "netflix premium" to listOf("netflix", "netflix 4k", "netflix uhd", "netflix premium", "netflix 1m"),
+        "netflix" to listOf("netflix", "netflix 4k", "netflix uhd", "netflix premium", "netflix 1m"),
+        "capcut pro" to listOf("capcut", "capcut pro", "capcut premium"),
+        "midjourney" to listOf("midjourney", "mid journey", "mj standard", "mj pro"),
+        "grammarly premium" to listOf("grammarly", "grammarly premium", "grammarly business"),
+        "prime video" to listOf("prime video", "amazon prime", "prime", "amazon"),
+        "jetbrains" to listOf("jetbrains", "jet brains", "all products pack"),
+        "cursor ai" to listOf("cursor", "cursor ai", "cursor pro"),
+        "github copilot" to listOf("github copilot", "copilot", "copilot individual"),
+        "freepik" to listOf("freepik", "freepik premium"),
+        "envato" to listOf("envato", "envato elements"),
+        "elevenlabs" to listOf("elevenlabs", "eleven labs", "11labs")
+    )
+
+    fun getAliasesForTool(toolQuery: String): List<String> {
+        val q = toolQuery.trim().lowercase(Locale.ROOT)
+        if (q.isEmpty()) return emptyList()
+
+        for ((canonical, aliases) in PRODUCT_ALIASES) {
+            if (canonical.contains(q) || aliases.any { it.contains(q) || q.contains(it) }) {
+                return (listOf(canonical) + aliases).distinct()
+            }
+        }
+        return listOf(q)
+    }
+
+    fun doesTextMatchTarget(text: String, targetQuery: String): Boolean {
+        if (targetQuery.isBlank()) return true
+        val cleanText = text.lowercase(Locale.ROOT)
+        val aliases = getAliasesForTool(targetQuery)
+        return aliases.any { alias -> cleanText.contains(alias) }
+    }
+
+    /**
+     * Ranks a navigation button by relevance to finding the target product or catalog root.
+     * Higher score = higher exploration priority.
+     */
+    fun rankNavigationButton(buttonText: String, targetQuery: String): Int {
+        val t = buttonText.lowercase(Locale.ROOT)
+        if (targetQuery.isNotBlank() && doesTextMatchTarget(t, targetQuery)) {
+            return 100 // Direct target product or variant candidate
+        }
+        if (t.contains("ai tool") || t.contains("tools") || t.contains("software") || t.contains("services")) {
+            return 80 // Primary relevant category
+        }
+        if (t.contains("product") || t.contains("shop") || t.contains("store") || t.contains("catalog") || t.contains("category")) {
+            return 70 // Catalog root
+        }
+        if (t.contains("next") || t.contains("page") || t.contains("more") || t.contains(">>")) {
+            return 40 // Pagination
+        }
+        if (t.contains("month") || t.contains("day") || t.contains("year") || t.contains("private") || t.contains("shared")) {
+            return 60 // Variant selector
+        }
+        return 10 // Other safe items
+    }
+
     /**
      * Extracts known canonical tool name from line.
      */

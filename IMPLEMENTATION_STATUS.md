@@ -1,10 +1,10 @@
 # IMPLEMENTATION_STATUS.md — Supplier Price Intelligence Agent
 
-**Repository:** `m-rehman55/ai-tool-gems-supplier-intelligence` (PRIVATE)  
+**Repository:** `m-rehman55/ai-tool-gems-supplier-intelligence` (PUBLIC)  
 **Workspace:** `d:\Desktop\ai-tool-gems-supplier-intelligence`  
 **Target Market:** Pakistan (PKR benchmarks, international sourcing in USD/USDT)  
 **Execution Mode:** Autonomous Full Implementation  
-**Last Updated:** 2026-10-18
+**Last Updated:** 2026-10-18  
 
 ---
 
@@ -12,14 +12,14 @@
 
 | Phase | Description | Status | Evidence / Notes |
 |---|---|---|---|
-| **Phase A** | Workspace, repository, and privacy inspection | ✅ COMPLETED | Created `m-rehman55/ai-tool-gems-supplier-intelligence` as PRIVATE. Verified via `gh repo view`. Public repo `m-rehman55/ai-tool-gems` is 100% clean and untouched. |
-| **Phase B** | Data schema, SQLite persistence, seed directory & normalization | ✅ COMPLETED | 10 relational tables in `src/models.py`. 45+ suppliers, 20 tools, 42 exact plans seeded in `data/supplier_intelligence.db` with matching keys. |
-| **Phase C** | Exact-plan comparator, FX engine, cost/margin calculator & risk policy | ✅ COMPLETED | Landed cost, fee (1.5%), reserve (3%), break-even, profit band (PKR 400–800) & `MARGIN_CONFLICT` detection in `src/pricing.py`. |
-| **Phase D** | Streamlit interactive dashboard & Excel workspace (`master_catalog.xlsx`) | ✅ COMPLETED | 10 dashboard pages in `app.py`. Single persistent `master_catalog.xlsx` generated with all 13 worksheets formatted with headers, conditional styles, and strict verification logic. |
+| **Phase A** | Workspace, repository, and privacy inspection | ✅ COMPLETED | Converted repo to **PUBLIC** as explicitly requested by owner for ChatGPT/external integration. Verified via `gh repo view`. Zero credentials/secrets in Git. |
+| **Phase B** | Data schema, SQLite persistence, seed directory & normalization | ✅ COMPLETED | 10 relational tables in Python; SQLite with non-destructive migrations, append-only `price_history` table, and normalized handle upserts in Android. |
+| **Phase C** | Exact-plan comparator, FX engine, cost/margin calculator & risk policy | ✅ COMPLETED | Landed cost, fee (1.5%), reserve (3%), break-even, profit band (PKR 400–800), like-for-like exact plan grouping in `WinnerEngine`, and currency-specific routing (PKR rate 1.0). |
+| **Phase D** | Streamlit interactive dashboard & Excel workspace (`master_catalog.xlsx`) | ✅ COMPLETED | 10 dashboard pages in `app.py`. Single persistent `master_catalog.xlsx` generated with all 13 worksheets formatted with headers and verification logic. |
 | **Phase E** | Public-only research adapters, cached fetches & change alerts | ✅ COMPLETED | `TelegramPublicChannelAdapter` with rate limiting, 4-hour caching, promotional/referral noise rejection, and `AlertEngine`. |
-| **Phase F** | Security review, WinnerEngine, CI workflows, and comprehensive test suite | ✅ COMPLETED | 30/30 tests passing (100% pass rate). Rule 9 WinnerEngine enforces verified vs unverified vs stale vs high-risk distinctions. CI workflows created. |
-| **Phase G** | Final verification, live run check & user handoff in simple Roman Urdu | ✅ COMPLETED | CLI lookup verified with live verified rates (e.g. DigiCart ChatGPT Plus $4.80 USDT vs pending unverified offers). Handoff guide prepared in Roman Urdu. |
-| **Phase H** | Android APK Implementation (`android/`) & GitHub Actions Build Workflow | ✅ COMPLETED | Native Android app `TelegramSupplierPriceFinder` (Kotlin, SQLite, Keystore, SafetyBoundary, WinnerEngine, 16+ canonical bots). `.github/workflows/android-build.yml` configured. |
+| **Phase F** | Security review, WinnerEngine, CI workflows, and comprehensive test suite | ✅ COMPLETED | 34/34 python tests passing. Android unit tests passing (`SafetyBoundaryTest`, `WinnerEngineTest`, `PriceExtractorTest`, `InternationalPhoneAndCatalogTest`). |
+| **Phase G** | Final verification, live run check & user handoff in simple Roman Urdu | ✅ COMPLETED | CLI lookup verified with live rates. Handoff guide prepared in Roman Urdu. |
+| **Phase H** | Android Native App (`android/`) & GitHub Actions CI Workflow | ✅ COMPLETED | Native Android app `TelegramSupplierPriceFinder` (Kotlin, SQLite v3, Keystore, Fail-Closed `SafetyBoundary`, targeted single-bot crawl, Obsidian Dark theme). CI builds green. |
 
 ---
 

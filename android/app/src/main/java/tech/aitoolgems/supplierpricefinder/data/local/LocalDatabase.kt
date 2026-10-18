@@ -10,10 +10,11 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
 
     companion object {
         const val DATABASE_NAME = "supplier_price_finder.db"
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 3
 
         const val TABLE_SUPPLIERS = "suppliers"
         const val TABLE_OBSERVATIONS = "price_observations"
+        const val TABLE_PRICE_HISTORY = "price_history"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -57,6 +58,21 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
                 original_raw_text TEXT NOT NULL,
                 source_url TEXT,
                 observed_at INTEGER NOT NULL
+            )
+        """.trimIndent())
+
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS $TABLE_PRICE_HISTORY (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                observation_id INTEGER,
+                supplier_id INTEGER,
+                product_name TEXT NOT NULL,
+                plan_name TEXT NOT NULL,
+                old_amount REAL,
+                new_amount REAL NOT NULL,
+                currency TEXT NOT NULL,
+                amount_pkr REAL NOT NULL,
+                changed_at INTEGER NOT NULL
             )
         """.trimIndent())
 
@@ -124,9 +140,23 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_OBSERVATIONS")
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_SUPPLIERS")
-        onCreate(db)
+        // Non-destructive SQLite migration (Never drop tables!)
+        if (oldVersion < 3) {
+            db.execSQL("""
+                CREATE TABLE IF NOT EXISTS $TABLE_PRICE_HISTORY (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    observation_id INTEGER,
+                    supplier_id INTEGER,
+                    product_name TEXT NOT NULL,
+                    plan_name TEXT NOT NULL,
+                    old_amount REAL,
+                    new_amount REAL NOT NULL,
+                    currency TEXT NOT NULL,
+                    amount_pkr REAL NOT NULL,
+                    changed_at INTEGER NOT NULL
+                )
+            """.trimIndent())
+        }
     }
 
     fun getAllSuppliers(): List<Supplier> {
@@ -181,7 +211,26 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             put("notes", supplier.notes)
             put("last_checked_at", System.currentTimeMillis())
         }
-        return db.insertWithOnConflict(TABLE_SUPPLIERS, null, cv, SQLiteDatabase.CONFLICT_REPLACE)
+
+        // Normalized handle comparison to avoid orphaned observations or ID recreation
+        val normHandle = supplier.primaryHandle.trim().removePrefix("@").lowercase(java.util.Locale.ROOT)
+        val existingCursor = db.rawQuery(
+            "SELECT id FROM $TABLE_SUPPLIERS WHERE lower(replace(primary_handle, '@', '')) = ? OR canonical_name = ?",
+            arrayOf(normHandle, supplier.canonicalName)
+        )
+        var existingId: Long? = null
+        existingCursor.use {
+            if (it.moveToFirst()) {
+                existingId = it.getLong(0)
+            }
+        }
+
+        return if (existingId != null) {
+            db.update(TABLE_SUPPLIERS, cv, "id = ?", arrayOf(existingId.toString()))
+            existingId!!
+        } else {
+            db.insert(TABLE_SUPPLIERS, null, cv)
+        }
     }
 
     fun getAllWholesaleProducts(): List<PriceObservation> {
@@ -222,21 +271,51 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
 
         // Check if observation already exists for this supplier and matching key
         val existingCursor = db.rawQuery(
-            "SELECT id FROM $TABLE_OBSERVATIONS WHERE supplier_id = ? AND matching_key = ?",
+            "SELECT id, amount, currency, amount_pkr FROM $TABLE_OBSERVATIONS WHERE supplier_id = ? AND matching_key = ?",
             arrayOf(obs.supplierId.toString(), obs.matchingKey)
         )
         var existingId: Long? = null
+        var previousAmount: Double? = null
         existingCursor.use {
             if (it.moveToFirst()) {
                 existingId = it.getLong(0)
+                previousAmount = it.getDouble(1)
             }
         }
 
         return if (existingId != null) {
+            // Append-only history logging on price fluctuations (ups and downs)
+            if (previousAmount != null && previousAmount != obs.amount) {
+                val histCv = ContentValues().apply {
+                    put("observation_id", existingId)
+                    put("supplier_id", obs.supplierId)
+                    put("product_name", obs.productName)
+                    put("plan_name", obs.planName)
+                    put("old_amount", previousAmount)
+                    put("new_amount", obs.amount)
+                    put("currency", obs.currency)
+                    put("amount_pkr", obs.amountPkr)
+                    put("changed_at", obs.observedAt)
+                }
+                db.insert(TABLE_PRICE_HISTORY, null, histCv)
+            }
             db.update(TABLE_OBSERVATIONS, cv, "id = ?", arrayOf(existingId.toString()))
             existingId!!
         } else {
-            db.insert(TABLE_OBSERVATIONS, null, cv)
+            val newId = db.insert(TABLE_OBSERVATIONS, null, cv)
+            val histCv = ContentValues().apply {
+                put("observation_id", newId)
+                put("supplier_id", obs.supplierId)
+                put("product_name", obs.productName)
+                put("plan_name", obs.planName)
+                put("old_amount", null as Double?)
+                put("new_amount", obs.amount)
+                put("currency", obs.currency)
+                put("amount_pkr", obs.amountPkr)
+                put("changed_at", obs.observedAt)
+            }
+            db.insert(TABLE_PRICE_HISTORY, null, histCv)
+            newId
         }
     }
 

@@ -68,8 +68,22 @@ object WinnerEngine {
             )
         }
 
-        val first = observations.first()
-        val sortedAll = observations.sortedBy { it.amountPkr }
+        // Like-for-like equivalence: compare only strictly identical duration and access model
+        val canonicalGroup = if (matchingKey.isNotBlank()) {
+            val keyMatches = observations.filter { it.matchingKey.equals(matchingKey, ignoreCase = true) }
+            if (keyMatches.isNotEmpty()) {
+                keyMatches
+            } else {
+                val first = observations.first()
+                observations.filter { it.duration == first.duration && it.accessType == first.accessType }
+            }
+        } else {
+            val first = observations.first()
+            observations.filter { it.duration == first.duration && it.accessType == first.accessType }
+        }
+
+        val first = canonicalGroup.first()
+        val sortedAll = canonicalGroup.sortedBy { it.amountPkr }
 
         val lowestAdvertised = sortedAll.first()
         val lowestComparable = sortedAll.first()

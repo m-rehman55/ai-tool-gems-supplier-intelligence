@@ -47,4 +47,15 @@ class PriceExtractorTest {
         assertEquals("No Warranty (NW)", PriceExtractor.extractWarranty(text3))
         assertEquals("Out of stock", PriceExtractor.extractStock(text3))
     }
+
+    @Test
+    fun testPkrPriceExtraction() {
+        val (price1, curr1) = PriceExtractor.extractPrice("Canva Pro 1 Year Private: Rs 2800")
+        assertEquals(2800.0, price1 ?: 0.0, 0.001)
+        assertEquals("PKR", curr1)
+
+        val (price2, curr2) = PriceExtractor.extractPrice("CapCut 1 Month: PKR 850")
+        assertEquals(850.0, price2 ?: 0.0, 0.001)
+        assertEquals("PKR", curr2)
+    }
 }

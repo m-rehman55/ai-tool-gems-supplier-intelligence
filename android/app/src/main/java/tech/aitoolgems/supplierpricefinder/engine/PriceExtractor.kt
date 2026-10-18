@@ -18,22 +18,36 @@ object PriceExtractor {
         val clean = text.trim()
         if (isReferralOrBonusMessage(clean)) return null to "USD"
 
-        // Check flash sale arrows: $10 -> $5
-        val arrowMatch = "\\$\\s*(\\d+(?:\\.\\d{1,2})?)\\s*→\\s*\\$\\s*(\\d+(?:\\.\\d{1,2})?)".toRegex().find(clean)
+        // Check flash sale arrows: $10 -> $5 or 10 USDT -> 5 USDT
+        val arrowMatch = "(?:\\$|USDT|PKR)?\\s*(\\d+(?:\\.\\d{1,2})?)\\s*(?:\\$|USDT|PKR)?\\s*→\\s*(?:\\$|USDT|PKR)?\\s*(\\d+(?:\\.\\d{1,2})?)\\s*(USDT|USD|PKR|Rs)?"
+            .toRegex(RegexOption.IGNORE_CASE).find(clean)
         if (arrowMatch != null) {
             val p = arrowMatch.groupValues[2].toDoubleOrNull()
-            return p to "USDT"
+            val currGroup = arrowMatch.groupValues[3]
+            val curr = when {
+                currGroup.equals("PKR", ignoreCase = true) || currGroup.equals("Rs", ignoreCase = true) -> "PKR"
+                currGroup.equals("USDT", ignoreCase = true) -> "USDT"
+                clean.contains("USDT", ignoreCase = true) && !clean.contains("$") -> "USDT"
+                clean.contains("PKR", ignoreCase = true) || clean.contains("Rs", ignoreCase = true) -> "PKR"
+                else -> "USD"
+            }
+            return p to curr
         }
 
-        // Direct price regex: $4.80 or 4.80 USDT or Price: $5
-        val priceMatch = "(?:Price|Price\\s*:|\\$|💵|💰|💲)\\s*(?:[:\\s]*)(?:\\$|USDT)?\\s*(\\d+(?:\\.\\d{1,2})?)\\s*(USDT|USD|PKR|INR|EUR)?".toRegex(RegexOption.IGNORE_CASE).find(clean)
+        // Direct price regex: $4.80 or 4.80 USDT or Price: $5 or PKR 2800 or Rs 2500
+        val priceMatch = "(?:Price|Price\\s*:|\\$|💵|💰|💲|PKR|Rs\\.?)\\s*([:\\s]*)(?:\\$|USDT|PKR|Rs\\.?)?\\s*(\\d+(?:\\.\\d{1,2})?)\\s*(USDT|USD|PKR|INR|EUR)?"
+            .toRegex(RegexOption.IGNORE_CASE).find(clean)
         if (priceMatch != null) {
-            val amount = priceMatch.groupValues[1].toDoubleOrNull()
-            val currGroup = priceMatch.groupValues[2]
+            val amount = priceMatch.groupValues[2].toDoubleOrNull()
+            val currGroup = priceMatch.groupValues[3]
+            val matchedPrefix = priceMatch.value.lowercase(Locale.ROOT)
             val curr = when {
                 currGroup.isNotEmpty() -> currGroup.uppercase(Locale.ROOT)
-                clean.contains("USDT", ignoreCase = true) -> "USDT"
+                matchedPrefix.contains("pkr") || matchedPrefix.contains("rs") -> "PKR"
+                matchedPrefix.contains("usdt") -> "USDT"
+                matchedPrefix.contains("$") -> "USD"
                 clean.contains("PKR", ignoreCase = true) || clean.contains("Rs", ignoreCase = true) -> "PKR"
+                clean.contains("USDT", ignoreCase = true) -> "USDT"
                 else -> "USD"
             }
             return amount to curr

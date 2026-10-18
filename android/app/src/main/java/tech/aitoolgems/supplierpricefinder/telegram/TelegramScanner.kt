@@ -38,72 +38,82 @@ class TelegramScanner(
 
     suspend fun scanSuppliersForTool(
         targetTool: String,
+        targetSupplierId: Long? = null,
         listener: ScanProgressListener? = null
     ): List<PriceObservation> = withContext(Dispatchers.IO) {
         isRunning = true
-        val results = mutableListOf<PriceObservation>()
-        val suppliers = database.getAllSuppliers().filter { it.isEnabled }
-        val targetQuery = targetTool.trim()
-
-        val fxRateUsdToPkr = 280.0
-        val fxRateUsdtToPkr = 282.5
-
-        for (supplier in suppliers) {
-            listener?.onSupplierScanning(supplier.primaryHandle, "Connecting to ${supplier.canonicalName}...")
-            delay(120) // Respect rate limits and Telegram flood control
-
-            val supplierQuotes = mutableListOf<PriceObservation>()
-
-            // 1. Attempt live channel preview fetch from publicUrl or direct handle preview
-            val channelHandle = supplier.primaryHandle.trim().removePrefix("@")
-            val targetUrl = when {
-                !supplier.publicUrl.isNullOrEmpty() && supplier.publicUrl.contains("t.me/s/") -> supplier.publicUrl
-                else -> "https://t.me/s/$channelHandle"
-            }
-
-            try {
-                val request = Request.Builder()
-                    .url(targetUrl)
-                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
-                    .build()
-                val response = httpClient.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val body = response.body?.string() ?: ""
-                    val liveQuotes = parseChannelHtml(body, supplier, targetQuery, fxRateUsdToPkr, fxRateUsdtToPkr)
-                    supplierQuotes.addAll(liveQuotes)
-                }
-            } catch (e: Exception) {
-                // Network timeout or VPN required -> seamless fallback to pre-verified observations
-            }
-
-            // 2. If live network didn't yield quotes (or for interactive bot), retrieve verified database observations
-            if (supplierQuotes.isEmpty()) {
-                val dbQuotes = database.getObservationsForSupplierAndQuery(supplier.id, targetQuery)
-                supplierQuotes.addAll(dbQuotes)
-            }
-
-            // 3. For every extracted quote, verify safety boundary and emit
-            if (supplierQuotes.isNotEmpty()) {
-                for (obs in supplierQuotes) {
-                    val safety = SafetyBoundary.checkButtonSafety(obs.planName)
-                    if (safety.isSafe) {
-                        if (results.none { it.id == obs.id || (it.matchingKey == obs.matchingKey && it.supplierId == obs.supplierId) }) {
-                            results.add(obs)
-                            database.saveObservation(obs)
-                            listener?.onProductExtracted(obs)
-                        }
-                    } else {
-                        listener?.onSupplierBlocked(supplier.primaryHandle, "Blocked purchase-risk offer: ${obs.planName}")
-                    }
-                }
-                listener?.onSupplierScanning(supplier.primaryHandle, "Found ${supplierQuotes.size} verified quote(s) for '$targetQuery'")
+        try {
+            val results = mutableListOf<PriceObservation>()
+            val allSuppliers = database.getAllSuppliers().filter { it.isEnabled }
+            val suppliers = if (targetSupplierId != null) {
+                allSuppliers.filter { it.id == targetSupplierId }
             } else {
-                listener?.onSupplierScanning(supplier.primaryHandle, "Inspected. No active stock for '$targetQuery' right now.")
+                allSuppliers
             }
-        }
+            val targetQuery = targetTool.trim()
 
-        isRunning = false
-        results
+            val fxRateUsdToPkr = 280.0
+            val fxRateUsdtToPkr = 282.5
+
+            for (supplier in suppliers) {
+                listener?.onSupplierScanning(supplier.primaryHandle, "Connecting to ${supplier.canonicalName}...")
+                delay(120) // Respect rate limits and Telegram flood control
+
+                val supplierQuotes = mutableListOf<PriceObservation>()
+
+                // 1. Attempt live channel preview fetch from publicUrl or direct handle preview
+                val channelHandle = supplier.primaryHandle.trim().removePrefix("@")
+                val targetUrl = when {
+                    !supplier.publicUrl.isNullOrEmpty() && supplier.publicUrl.contains("t.me/s/") -> supplier.publicUrl
+                    else -> "https://t.me/s/$channelHandle"
+                }
+
+                try {
+                    val request = Request.Builder()
+                        .url(targetUrl)
+                        .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
+                        .build()
+                    val response = httpClient.newCall(request).execute()
+                    response.use { resp ->
+                        if (resp.isSuccessful) {
+                            val body = resp.body?.string() ?: ""
+                            val liveQuotes = parseChannelHtml(body, supplier, targetQuery, fxRateUsdToPkr, fxRateUsdtToPkr)
+                            supplierQuotes.addAll(liveQuotes)
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Network timeout, rate limit, or VPN required -> log status for transparency
+                }
+
+                // 2. If live network didn't yield quotes, check stored observations for this supplier
+                if (supplierQuotes.isEmpty()) {
+                    val dbQuotes = database.getObservationsForSupplierAndQuery(supplier.id, targetQuery)
+                    supplierQuotes.addAll(dbQuotes)
+                }
+
+                // 3. For every extracted quote, verify safety boundary and emit
+                if (supplierQuotes.isNotEmpty()) {
+                    for (obs in supplierQuotes) {
+                        val safety = SafetyBoundary.checkButtonSafety(obs.planName)
+                        if (safety.isSafe) {
+                            if (results.none { it.id == obs.id || (it.matchingKey == obs.matchingKey && it.supplierId == obs.supplierId) }) {
+                                results.add(obs)
+                                database.saveObservation(obs)
+                                listener?.onProductExtracted(obs)
+                            }
+                        } else {
+                            listener?.onSupplierBlocked(supplier.primaryHandle, "Blocked: ${obs.planName} (${safety.reason})")
+                        }
+                    }
+                    listener?.onSupplierScanning(supplier.primaryHandle, "Found ${supplierQuotes.size} quote(s) for '$targetQuery'")
+                } else {
+                    listener?.onSupplierScanning(supplier.primaryHandle, "Inspected. No current offers for '$targetQuery'.")
+                }
+            }
+            results
+        } finally {
+            isRunning = false
+        }
     }
 
     private fun parseChannelHtml(
@@ -142,8 +152,14 @@ class TelegramScanner(
                     val duration = PlanMatcher.parseDuration(clean)
                     val accessType = PlanMatcher.parseAccessType(clean)
                     val matchingKey = PlanMatcher.generateMatchingKey(targetQuery, clean.lines().firstOrNull() ?: targetQuery, duration, accessType)
-                    val rate = if (currency.equals("USDT", ignoreCase = true)) usdtRate else usdRate
-                    val pkr = price * rate
+
+                    // Strict currency routing: Never multiply PKR by USD FX rate!
+                    val pkr = when (currency.uppercase(Locale.ROOT)) {
+                        "PKR" -> price
+                        "USDT" -> price * usdtRate
+                        "USD" -> price * usdRate
+                        else -> price * usdRate
+                    }
 
                     list.add(
                         PriceObservation(
@@ -160,7 +176,8 @@ class TelegramScanner(
                             amountPkr = pkr,
                             warranty = PriceExtractor.extractWarranty(clean),
                             stockStatus = PriceExtractor.extractStock(clean),
-                            verificationStatus = if (secureStorage.isConfigured) VerificationStatus.VERIFIED else VerificationStatus.USER_SUPPLIED_UNVERIFIED,
+                            // Public channel preview quotes without cryptographic TDLib session are UNVERIFIED
+                            verificationStatus = VerificationStatus.USER_SUPPLIED_UNVERIFIED,
                             riskLevel = if (price < 1.0 && targetQuery.contains("ChatGPT", ignoreCase = true)) RiskLevel.HIGH else RiskLevel.LOW,
                             captureMethod = "LIVE_TELEGRAM_PREVIEW",
                             originalRawText = clean.take(250),

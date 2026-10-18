@@ -119,4 +119,50 @@ class WinnerEngineTest {
         assertEquals(verifiedQuote, eval.lowestVerified)       // $4.80 is verified winner!
         assertEquals("VERIFIED_WINNER_FOUND", eval.statusSummary)
     }
+
+    @Test
+    fun testLikeForLikePlanEquivalenceEnforcement() {
+        val sharedOneMonth = PriceObservation(
+            id = 1,
+            supplierId = 1,
+            supplierName = "Bot A",
+            supplierHandle = "@bot_a",
+            productName = "Canva Pro",
+            planName = "Canva Pro 1 Month Shared",
+            duration = "1 Month",
+            accessType = AccessType.SHARED,
+            matchingKey = "canva__pro__1_month__shared",
+            amount = 1.00,
+            currency = "USD",
+            amountPkr = 280.0,
+            verificationStatus = VerificationStatus.VERIFIED,
+            riskLevel = RiskLevel.LOW,
+            originalRawText = "Canva 1 Month Shared $1.00"
+        )
+
+        val privateOneYear = PriceObservation(
+            id = 2,
+            supplierId = 2,
+            supplierName = "Bot B",
+            supplierHandle = "@bot_b",
+            productName = "Canva Pro",
+            planName = "Canva Pro 1 Year Private",
+            duration = "1 Year",
+            accessType = AccessType.PRIVATE,
+            matchingKey = "canva__pro__1_year__private",
+            amount = 10.00,
+            currency = "USD",
+            amountPkr = 2800.0,
+            verificationStatus = VerificationStatus.VERIFIED,
+            riskLevel = RiskLevel.LOW,
+            originalRawText = "Canva 1 Year Private $10.00"
+        )
+
+        // Evaluating specifically for "canva__pro__1_year__private" must NEVER let the shared 1-month plan win or compete
+        val eval = WinnerEngine.evaluatePlan("canva__pro__1_year__private", listOf(sharedOneMonth, privateOneYear))
+        assertTrue(eval.hasVerifiedWinner)
+        assertEquals(privateOneYear, eval.lowestVerified)
+        assertEquals(privateOneYear, eval.lowestAdvertised)
+        assertFalse("Shared plan must not be in the canonical comparison group", eval.allObservations.contains(sharedOneMonth))
+    }
 }

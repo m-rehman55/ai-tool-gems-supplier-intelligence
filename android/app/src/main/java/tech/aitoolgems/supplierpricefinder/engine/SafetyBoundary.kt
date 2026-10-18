@@ -8,6 +8,9 @@ object SafetyBoundary {
     /**
      * Regex patterns for actions that cross purchase, payment, or irreversible transaction boundaries.
      */
+    /**
+     * Regex patterns for actions that cross purchase, payment, or irreversible transaction boundaries.
+     */
     private val FORBIDDEN_PURCHASE_PATTERNS = listOf(
         "\\bbuy\\b",
         "\\bpurchase\\b",
@@ -23,16 +26,27 @@ object SafetyBoundary {
         "\\binvoice\\b",
         "\\btransfer\\b",
         "\\bpay\\s*now\\b",
-        "\\bcart\\b"
+        "\\bcart\\b",
+        "\\bsubscribe\\b",
+        "\\bactivate\\b",
+        "\\brenew\\b",
+        "\\bconfirm\\b"
     ).map { it.toRegex(RegexOption.IGNORE_CASE) }
 
     private val FORBIDDEN_CALLBACK_PATTERNS = listOf(
-        "buy_", "order_", "checkout_", "pay_", "deposit_", "invoice_", "topup_"
+        "buy_", "order_", "checkout_", "pay_", "deposit_", "invoice_", "topup_", "confirm_", "activate_", "renew_"
+    )
+
+    private val SAFE_CATALOG_KEYWORDS = listOf(
+        "product", "shop", "store", "catalog", "menu", "service", "tools",
+        "back", "next", "page", "previous", "detail", "view", "open", "category", "list", "info", "help"
     )
 
     /**
      * Classifies whether an inline button or menu option is safe to navigate.
-     * Returns SAFE only if it does not trigger any financial or purchase commitments.
+     * FAILS CLOSED: Returns SAFE only if it matches explicit catalog navigation terms.
+     * Returns BLOCKED_PURCHASE_RISK for purchase/payment actions.
+     * Returns MANUAL_REVIEW_REQUIRED for unknown/ambiguous labels.
      */
     fun checkButtonSafety(buttonText: String, callbackData: String = ""): NavigationSafety {
         val cleanText = buttonText.trim().lowercase(Locale.ROOT)
@@ -50,18 +64,21 @@ object SafetyBoundary {
             }
         }
 
-        return NavigationSafety.SAFE
+        // Must match safe catalog keyword to be deemed SAFE (Fail-Closed)
+        val isExplicitlySafeText = SAFE_CATALOG_KEYWORDS.any { cleanText.contains(it) }
+        val isExplicitlySafeData = cleanData.isEmpty() || SAFE_CATALOG_KEYWORDS.any { cleanData.contains(it) }
+
+        if (isExplicitlySafeText && isExplicitlySafeData) {
+            return NavigationSafety.SAFE
+        }
+
+        return NavigationSafety.MANUAL_REVIEW_REQUIRED
     }
 
     /**
      * Identifies whether a button is a safe catalog or product navigation target.
      */
     fun isCatalogNavigationButton(buttonText: String): Boolean {
-        val t = buttonText.trim().lowercase(Locale.ROOT)
-        val catalogKeywords = listOf(
-            "product", "shop", "store", "catalog", "menu", "service", "tools",
-            "back", "next", "page", "previous", "detail", "view", "open"
-        )
-        return catalogKeywords.any { t.contains(it) } && checkButtonSafety(buttonText).isSafe
+        return checkButtonSafety(buttonText).isSafe
     }
 }

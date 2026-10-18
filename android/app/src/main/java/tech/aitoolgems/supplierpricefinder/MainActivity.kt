@@ -274,9 +274,44 @@ class MainActivity : AppCompatActivity() {
             },
             onCrawl = { supplier ->
                 Toast.makeText(this, "Crawling ${supplier.primaryHandle}...", Toast.LENGTH_SHORT).show()
-                performLiveScan(supplier.canonicalName)
+                performSupplierSpecificScan(supplier)
             }
         )
+    }
+
+    private fun performSupplierSpecificScan(supplier: Supplier) {
+        binding.progressBarScan.visibility = View.VISIBLE
+        binding.tvScanProgressStatus.text = "Targeted scan: ${supplier.primaryHandle}..."
+
+        lifecycleScope.launch {
+            val newlyExtracted = scanner.scanSuppliersForTool(
+                targetTool = "",
+                targetSupplierId = supplier.id,
+                listener = object : ScanProgressListener {
+                    override fun onSupplierScanning(supplierHandle: String, message: String) {
+                        runOnUiThread {
+                            binding.tvScanProgressStatus.text = "[$supplierHandle] $message"
+                        }
+                    }
+
+                    override fun onProductExtracted(observation: PriceObservation) {
+                        runOnUiThread {
+                            binding.tvScanProgressStatus.text = "Extracted: ${observation.productName} (${observation.amount} ${observation.currency})"
+                        }
+                    }
+
+                    override fun onSupplierBlocked(supplierHandle: String, reason: String) {
+                        runOnUiThread {
+                            binding.tvScanProgressStatus.text = "⚠️ [$supplierHandle] $reason"
+                        }
+                    }
+                }
+            )
+
+            binding.progressBarScan.visibility = View.GONE
+            Toast.makeText(this@MainActivity, "Scan complete for ${supplier.primaryHandle}. Found ${newlyExtracted.size} offer(s).", Toast.LENGTH_LONG).show()
+            loadSuppliersTab()
+        }
     }
 
     private fun loadHistoryTab() {
@@ -425,12 +460,12 @@ class MainActivity : AppCompatActivity() {
                     secureStorage.phoneNumber = phone
 
                     if (code.isNotEmpty()) {
-                        secureStorage.sessionString = "AUTHORIZED_MTPROTO_SESSION_${System.currentTimeMillis()}"
+                        secureStorage.sessionString = "CONFIGURED_API_AUTH_${phone.filter { it.isDigit() }}"
                         updateTelegramStatusChip()
-                        Toast.makeText(this, "Telegram Account Verified & Connected Securely!", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Telegram credentials stored. Authenticated preview & catalog explorer active.", Toast.LENGTH_LONG).show()
                     } else {
                         updateTelegramStatusChip()
-                        Toast.makeText(this, "Telegram credentials encrypted in Android Keystore. Request OTP whenever ready.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Telegram credentials encrypted in Android Keystore.", Toast.LENGTH_LONG).show()
                     }
                 }
             }

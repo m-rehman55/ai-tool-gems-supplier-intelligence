@@ -64,4 +64,14 @@ class SafetyBoundaryTest {
             assertTrue("Expected isCatalogNavigationButton to be true for '$btn'", SafetyBoundary.isCatalogNavigationButton(btn))
         }
     }
+
+    @Test
+    fun testAmbiguousButtonRequiresManualReview() {
+        val ambiguousButtons = listOf("Proceed", "Go Ahead", "Click to Continue", "Random Custom Action")
+        for (btn in ambiguousButtons) {
+            val safety = SafetyBoundary.checkButtonSafety(btn)
+            assertFalse("Expected '$btn' not to be automatically safe", safety.isSafe)
+            org.junit.Assert.assertEquals(NavigationSafety.MANUAL_REVIEW_REQUIRED, safety)
+        }
+    }
 }

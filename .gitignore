@@ -39,3 +39,11 @@ htmlcov/
 # Backups
 backups/
 scratch/
+
+# Android build artifacts
+dist-apk/
+*.apk
+.gradle/
+android/.gradle/
+android/**/build/
+android/local.properties

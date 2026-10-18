@@ -14,6 +14,7 @@ def test_export_master_catalog_has_all_13_sheets():
         output_path = os.path.join(tmpdir, "test_master_catalog.xlsx")
         
         # Ensure db is initialized and export
+        init_db()
         with get_db() as db:
             wb = export_master_catalog(db, output_path=output_path)
             

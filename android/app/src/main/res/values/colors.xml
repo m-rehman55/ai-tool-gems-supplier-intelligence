@@ -1,18 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#0D47A1</color>
-    <color name="primary_dark">#0A2472</color>
-    <color name="accent">#00C853</color>
-    <color name="background_light">#F8F9FA</color>
-    <color name="card_background">#FFFFFF</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="winner_gold">#FFD700</color>
-    <color name="badge_verified">#E8F5E9</color>
-    <color name="badge_verified_text">#2E7D32</color>
-    <color name="badge_unverified">#FFF3E0</color>
-    <color name="badge_unverified_text">#E65100</color>
-    <color name="badge_risk">#FFEBEE</color>
-    <color name="badge_risk_text">#C62828</color>
+    <!-- Modern Luxury Obsidian & Cyber Emerald Theme -->
+    <color name="primary">#00E676</color>
+    <color name="primary_dark">#0A0E17</color>
+    <color name="accent">#00E5FF</color>
+    <color name="background_light">#0B0F19</color>
+    <color name="card_background">#151D2A</color>
+    <color name="card_elevated">#1E293B</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="winner_gold">#FBBF24</color>
+    <color name="badge_verified">#064E3B</color>
+    <color name="badge_verified_text">#34D399</color>
+    <color name="badge_unverified">#451A03</color>
+    <color name="badge_unverified_text">#FBBF24</color>
+    <color name="badge_risk">#4C0519</color>
+    <color name="badge_risk_text">#FB7185</color>
     <color name="white">#FFFFFF</color>
-    <color name="divider">#EEEEEE</color>
+    <color name="divider">#2A374A</color>
 </resources>

@@ -3,9 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="6dp"
-    app:cardCornerRadius="6dp"
-    app:cardElevation="1dp">
+    android:layout_marginBottom="8dp"
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -42,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Status: Active | Reliable: 85%"
+                android:text="Status: Active Bot | Reliable: 85%"
                 android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
 
@@ -52,16 +53,20 @@
             android:id="@+id/btnTestSupplier"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Test"
-            android:textSize="12sp" />
+            android:layout_height="36dp"
+            android:text="Crawl"
+            android:textColor="@color/primary"
+            android:textSize="11sp"
+            app:strokeColor="@color/primary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switchSupplierActive"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:checked="true" />
+            android:checked="true"
+            app:thumbTint="@color/primary"
+            app:trackTint="@color/divider" />
 
     </LinearLayout>
 

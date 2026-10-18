@@ -1,20 +1,21 @@
 <resources>
-    <string name="app_name">Telegram Supplier Price Finder</string>
-    <string name="search_hint">Search tool (e.g. ChatGPT Plus, CapCut, Gemini)...</string>
-    <string name="btn_search_suppliers">Search Suppliers</string>
-    <string name="tab_comparison">Price Comparison</string>
-    <string name="tab_suppliers">Suppliers</string>
+    <string name="app_name">AI Tool Gems — Supplier Radar</string>
+    <string name="search_hint">Search tool (e.g. ChatGPT, CapCut, Netflix, Gemini)...</string>
+    <string name="btn_search_suppliers">Scan Supplier Bots</string>
+    <string name="tab_comparison">Price Compare</string>
+    <string name="tab_all_tools">All Bot Tools</string>
+    <string name="tab_suppliers">Supplier Bots</string>
     <string name="tab_history">Scan History</string>
     <string name="cheapest_verified_title">🏆 Cheapest Verified Equivalent Plan</string>
     <string name="no_verified_winner">⏳ No Verified Winner Yet</string>
     <string name="scan_progress_idle">Ready to search suppliers. Enter a tool name above.</string>
     <string name="manual_review_status">Requires Manual Review</string>
     <string name="telegram_status_connected">Telegram: Connected</string>
-    <string name="telegram_status_disconnected">Telegram: Disconnected (Configure)</string>
+    <string name="telegram_status_disconnected">Telegram: Tap to Connect</string>
     <string name="filter_all">All</string>
     <string name="filter_private">Private</string>
     <string name="filter_shared">Shared</string>
     <string name="filter_edu">Edu</string>
-    <string name="add_supplier">Add Supplier</string>
-    <string name="safety_warning">🔒 Safety Guard Active: Automated purchases and wallet transfers are strictly disabled.</string>
+    <string name="add_supplier">Add New Bot</string>
+    <string name="safety_warning">🔒 Safety Guard Active: Automated orders, checkouts, and wallet transfers are permanently blocked.</string>
 </resources>

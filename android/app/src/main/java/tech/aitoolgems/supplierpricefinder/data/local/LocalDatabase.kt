@@ -165,6 +165,37 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
         db.update(TABLE_SUPPLIERS, cv, "id = ?", arrayOf(supplierId.toString()))
     }
 
+    fun addSupplier(supplier: Supplier): Long {
+        val db = writableDatabase
+        val cv = ContentValues().apply {
+            put("canonical_name", supplier.canonicalName)
+            put("primary_handle", supplier.primaryHandle)
+            put("all_handles", supplier.allHandles)
+            put("entity_type", supplier.entityType)
+            put("public_url", supplier.publicUrl)
+            put("supported_currencies", supplier.supportedCurrencies)
+            put("is_enabled", if (supplier.isEnabled) 1 else 0)
+            put("reliability_score", supplier.reliabilityScore)
+            put("risk_score", supplier.riskScore)
+            put("risk_flags", supplier.riskFlags)
+            put("notes", supplier.notes)
+            put("last_checked_at", System.currentTimeMillis())
+        }
+        return db.insertWithOnConflict(TABLE_SUPPLIERS, null, cv, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    fun getAllWholesaleProducts(): List<PriceObservation> {
+        val list = mutableListOf<PriceObservation>()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_OBSERVATIONS ORDER BY product_name ASC, amount_pkr ASC", null)
+        cursor.use { c ->
+            while (c.moveToNext()) {
+                list.add(cursorToObservation(c))
+            }
+        }
+        return list
+    }
+
     fun saveObservation(obs: PriceObservation): Long {
         val db = writableDatabase
         val cv = ContentValues().apply {
@@ -188,7 +219,25 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             put("source_url", obs.sourceUrl)
             put("observed_at", obs.observedAt)
         }
-        return db.insert(TABLE_OBSERVATIONS, null, cv)
+
+        // Check if observation already exists for this supplier and matching key
+        val existingCursor = db.rawQuery(
+            "SELECT id FROM $TABLE_OBSERVATIONS WHERE supplier_id = ? AND matching_key = ?",
+            arrayOf(obs.supplierId.toString(), obs.matchingKey)
+        )
+        var existingId: Long? = null
+        existingCursor.use {
+            if (it.moveToFirst()) {
+                existingId = it.getLong(0)
+            }
+        }
+
+        return if (existingId != null) {
+            db.update(TABLE_OBSERVATIONS, cv, "id = ?", arrayOf(existingId.toString()))
+            existingId!!
+        } else {
+            db.insert(TABLE_OBSERVATIONS, null, cv)
+        }
     }
 
     fun getObservationsForQuery(query: String): List<PriceObservation> {

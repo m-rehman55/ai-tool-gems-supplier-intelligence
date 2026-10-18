@@ -54,23 +54,26 @@ class TelegramScanner(
 
             val supplierQuotes = mutableListOf<PriceObservation>()
 
-            // 1. Attempt live channel preview fetch if public URL is available
-            val publicUrl = supplier.publicUrl
-            if (!publicUrl.isNullOrEmpty() && publicUrl.contains("t.me/s/")) {
-                try {
-                    val request = Request.Builder()
-                        .url(publicUrl)
-                        .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
-                        .build()
-                    val response = httpClient.newCall(request).execute()
-                    if (response.isSuccessful) {
-                        val body = response.body?.string() ?: ""
-                        val liveQuotes = parseChannelHtml(body, supplier, targetQuery, fxRateUsdToPkr, fxRateUsdtToPkr)
-                        supplierQuotes.addAll(liveQuotes)
-                    }
-                } catch (e: Exception) {
-                    // Network timeout or VPN required -> seamless fallback to pre-verified observations
+            // 1. Attempt live channel preview fetch from publicUrl or direct handle preview
+            val channelHandle = supplier.primaryHandle.trim().removePrefix("@")
+            val targetUrl = when {
+                !supplier.publicUrl.isNullOrEmpty() && supplier.publicUrl.contains("t.me/s/") -> supplier.publicUrl
+                else -> "https://t.me/s/$channelHandle"
+            }
+
+            try {
+                val request = Request.Builder()
+                    .url(targetUrl)
+                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
+                    .build()
+                val response = httpClient.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val body = response.body?.string() ?: ""
+                    val liveQuotes = parseChannelHtml(body, supplier, targetQuery, fxRateUsdToPkr, fxRateUsdtToPkr)
+                    supplierQuotes.addAll(liveQuotes)
                 }
+            } catch (e: Exception) {
+                // Network timeout or VPN required -> seamless fallback to pre-verified observations
             }
 
             // 2. If live network didn't yield quotes (or for interactive bot), retrieve verified database observations

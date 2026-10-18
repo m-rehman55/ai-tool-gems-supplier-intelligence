@@ -8,12 +8,13 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/primary">
+        android:background="@color/primary_dark">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize">
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/primary_dark">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -22,14 +23,37 @@
                 android:orientation="horizontal"
                 android:paddingEnd="16dp">
 
-                <TextView
+                <!-- Modern Neon Radar App Logo -->
+                <ImageView
+                    android:id="@+id/ivToolbarLogo"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_marginEnd="10dp"
+                    android:contentDescription="App Logo"
+                    android:src="@drawable/ic_app_logo" />
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/app_name"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="AI Tool Gems"
+                        android:textColor="@color/primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Supplier Price Radar"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipTelegramStatus"
@@ -37,39 +61,51 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/telegram_status_disconnected"
-                    android:textColor="@color/primary_dark"
+                    android:textColor="@color/primary"
                     app:chipBackgroundColor="@color/card_background"
-                    app:chipIcon="@android:drawable/ic_dialog_info" />
+                    app:chipIcon="@android:drawable/ic_dialog_info"
+                    app:chipIconTint="@color/primary"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
 
             </LinearLayout>
 
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- Safety Banner -->
+        <!-- Safety Warning Banner -->
         <TextView
             android:id="@+id/tvSafetyBanner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#1B5E20"
+            android:background="#064E3B"
             android:padding="6dp"
             android:text="@string/safety_warning"
             android:textAlignment="center"
-            android:textColor="@android:color/white"
-            android:textSize="11sp" />
+            android:textColor="#34D399"
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
+        <!-- 4 Luxury Tabs -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/primary"
-            app:tabIndicatorColor="@color/accent"
-            app:tabSelectedTextColor="@android:color/white"
-            app:tabTextColor="#B0BEC5">
+            android:background="@color/primary_dark"
+            app:tabIndicatorColor="@color/primary"
+            app:tabIndicatorHeight="3dp"
+            app:tabMode="fixed"
+            app:tabSelectedTextColor="@color/primary"
+            app:tabTextColor="@color/text_secondary">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/tab_comparison" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tab_all_tools" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -94,10 +130,12 @@
 
         <!-- Search Input Card -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardSearchInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="10dp"
             app:cardElevation="2dp">
 
             <LinearLayout
@@ -109,7 +147,10 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:boxBackgroundMode="outline">
+                    app:boxBackgroundColor="@color/card_elevated"
+                    app:boxBackgroundMode="outline"
+                    app:boxStrokeColor="@color/primary"
+                    app:hintTextColor="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etSearchTool"
@@ -118,7 +159,8 @@
                         android:hint="@string/search_hint"
                         android:imeOptions="actionSearch"
                         android:inputType="text"
-                        android:text="ChatGPT Plus" />
+                        android:text="ChatGPT Plus"
+                        android:textColor="@color/text_primary" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -135,8 +177,12 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/btn_search_suppliers"
+                        android:textColor="@color/primary_dark"
+                        android:textStyle="bold"
                         app:backgroundTint="@color/primary"
-                        app:icon="@android:drawable/ic_menu_search" />
+                        app:cornerRadius="8dp"
+                        app:icon="@android:drawable/ic_menu_search"
+                        app:iconTint="@color/primary_dark" />
 
                 </LinearLayout>
 
@@ -146,7 +192,7 @@
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="8dp"
                     android:indeterminate="true"
                     android:visibility="gone" />
 
@@ -183,28 +229,44 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="@string/filter_all" />
+                    android:text="@string/filter_all"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFilterPrivate"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/filter_private" />
+                    android:text="@string/filter_private"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFilterShared"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/filter_shared" />
+                    android:text="@string/filter_shared"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipFilterEdu"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/filter_edu" />
+                    android:text="@string/filter_edu"
+                    android:textColor="@color/text_primary"
+                    app:chipBackgroundColor="@color/card_background"
+                    app:chipStrokeColor="@color/divider"
+                    app:chipStrokeWidth="1dp" />
 
             </com.google.android.material.chip.ChipGroup>
 
@@ -217,81 +279,136 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="8dp"
+            app:cardCornerRadius="10dp"
             app:cardElevation="3dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="12dp">
 
-                <TextView
-                    android:id="@+id/tvWinnerTitle"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/cheapest_verified_title"
-                    android:textColor="#E65100"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvWinnerTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/cheapest_verified_title"
+                        android:textColor="@color/primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvWinnerBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/badge_verified"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:text="RULE 9 WINNER"
+                        android:textColor="@color/badge_verified_text"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvWinnerSupplier"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="DigiCart Tools (@getdigitaltools_bot)"
+                    android:text="Supplier: DigiCart Tools (@getdigitaltools_bot)"
                     android:textColor="@color/text_primary"
-                    android:textSize="17sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/tvWinnerPrice"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="$4.80 USDT (~Rs. 1,356 PKR)"
                         android:textColor="@color/primary"
-                        android:textSize="16sp"
+                        android:textSize="18sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvWinnerWarranty"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
                         android:text="🛡 Full Warranty (FW)"
-                        android:textColor="@color/badge_verified_text"
-                        android:textSize="13sp" />
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvWinnerSpecs"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Duration: 1 Month | Account: PRIVATE | Stock: Available"
+                    android:text="Duration: 1 Month | Access: PRIVATE | Stock: 35 Available"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
 
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
-        <!-- Recycler View for Results / Suppliers -->
+        <!-- Header Actions Bar (For All Tools / Suppliers Tab) -->
+        <LinearLayout
+            android:id="@+id/layoutCatalogActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvCatalogCountSummary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Wholesale Catalog: 69 Tools Active"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddSupplierAction"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:paddingHorizontal="10dp"
+                android:text="+ Add Bot"
+                android:textColor="@color/primary"
+                android:textSize="11sp"
+                app:strokeColor="@color/primary" />
+
+        </LinearLayout>
+
+        <!-- Main Results RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewResults"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:clipToPadding="false"
-            android:scrollbars="vertical" />
+            android:paddingBottom="8dp" />
 
     </LinearLayout>
 

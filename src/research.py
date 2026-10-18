@@ -13,7 +13,7 @@ from src.models import ResearchCheckpoint, ResearchRun, ScanRunStatus
 
 BLOCKED_ACTION_WORDS = {
     "buy", "order", "checkout", "payment", "pay now", "wallet", "top up",
-    "confirm", "purchase", "deposit",
+    "confirm", "purchase", "deposit", "invoice", "transfer",
 }
 
 

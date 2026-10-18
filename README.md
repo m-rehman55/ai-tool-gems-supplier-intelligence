@@ -207,3 +207,27 @@ streamlit run app.py
 - **`VERIFIED` Status:** Only awarded when an inspectable public post link or verified payment screenshot is recorded within the freshness window (48 hours).
 - **Conflict Preservation:** Conflicting claims from different sources (e.g., $0.42 vs $0.45 for Gemini 18M) are preserved as separate unverified observations. History is never overwritten.
 - **USDT vs USD:** Distinct exchange rates (280.0 USD vs 282.5 USDT) are tracked separately to prevent currency confusion.
+
+---
+
+## 7. Android Mobile Application (`android/`)
+
+A standalone Android app named **Telegram Supplier Price Finder** (`tech.aitoolgems.supplierpricefinder`) allows you to run supplier price intelligence directly from your Android phone without keeping a computer running.
+
+### Key Mobile Features:
+- **Zero Server/PC Dependency:** Runs completely standalone on your phone.
+- **Search & Live Scanner:** Enter any tool name (e.g. `ChatGPT Plus`, `CapCut Pro`, `Google Gemini`) and tap **Search Suppliers** to trigger real-time bot inspection.
+- **Cheapest Verified Highlight:** Shows the lowest verified comparable offer with warranty, duration, and converted PKR cost.
+- **Strict No-Purchase Boundary:** Automatically intercepts and blocks all buy, checkout, pay, order, wallet top-up, and invoice buttons.
+- **On-Device Keystore:** Uses Android Keystore (`EncryptedSharedPreferences`) to encrypt your Telegram API ID and Hash locally.
+- **Local SQLite Persistence:** Saves previously inspected quotes so results remain available offline.
+
+### Building & Installing the APK:
+1. **Automated GitHub Actions Build:**
+   Whenever changes are pushed to `android/`, `.github/workflows/android-build.yml` compiles the app using JDK 17 and Android SDK 34, executes 34 automated unit tests, and publishes `TelegramSupplierPriceFinder-debug-apk` under GitHub Actions Artifacts.
+2. **Download & Install on Phone:**
+   - Go to your private repository's **Actions** tab on GitHub on your phone's browser.
+   - Tap the latest **Android APK Build & Test** run.
+   - Download the `TelegramSupplierPriceFinder-debug-apk` artifact.
+   - Open and install `app-debug.apk` (enable "Install from Unknown Sources" if prompted).
+   - Tap the **Telegram: Disconnected** chip to configure your API ID and Hash safely.

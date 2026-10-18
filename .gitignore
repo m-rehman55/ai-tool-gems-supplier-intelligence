@@ -23,6 +23,7 @@ data/runtime/
 .env.local
 *.session
 *.session-journal
+data/telethon_session*
 client_secret*.json
 credentials*.json
 

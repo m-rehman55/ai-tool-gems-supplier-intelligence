@@ -20,6 +20,7 @@ from src.pricing import PricingCalculator
 from src.fx import FxEngine
 from src.alerts import AlertEngine
 from src.excel import export_master_catalog
+from src.winner import WinnerEngine
 
 # Page configuration
 st.set_page_config(
@@ -92,20 +93,33 @@ if menu == "1. Overview & Radar":
             st.success("All supplier quotes and price benchmarks are within normal risk parameters.")
 
         st.subheader("🏆 Quick Best-Rate Summary (Top Tools)")
+        winner_engine = WinnerEngine()
         quick_rows = []
         for pl in db.query(ProductPlan).limit(10).all():
-            obs = sorted(pl.observations, key=lambda x: x.amount_pkr)
-            if obs:
-                best = obs[0]
+            eval_res = winner_engine.evaluate_plan(pl)
+            if eval_res.has_verified_winner and eval_res.lowest_verified:
+                best = eval_res.lowest_verified
                 quick_rows.append({
                     "Product": pl.product.name,
                     "Plan": pl.plan_name,
                     "Duration": pl.duration,
-                    "Best Supplier": best.supplier.canonical_name,
+                    "Best Supplier": f"🏆 {best.supplier.canonical_name}",
                     "Cost USD": f"${best.amount:.2f}",
                     "Cost PKR": f"Rs. {best.amount_pkr:,.0f}",
                     "Warranty": best.warranty,
-                    "Status": best.verification_status.value
+                    "Verification": "✅ VERIFIED"
+                })
+            elif eval_res.lowest_advertised:
+                low = eval_res.lowest_advertised
+                quick_rows.append({
+                    "Product": pl.product.name,
+                    "Plan": pl.plan_name,
+                    "Duration": pl.duration,
+                    "Best Supplier": f"📢 {low.supplier.canonical_name} (Unverified)",
+                    "Cost USD": f"${low.amount:.2f}",
+                    "Cost PKR": f"Rs. {low.amount_pkr:,.0f}",
+                    "Warranty": low.warranty,
+                    "Verification": f"⏳ {low.verification_status.value}"
                 })
         if quick_rows:
             st.dataframe(pd.DataFrame(quick_rows), use_container_width=True)
@@ -190,30 +204,47 @@ elif menu == "4. Price Comparison":
             if not obs_list:
                 st.warning("No price observations recorded yet for this plan.")
             else:
-                winner = obs_list[0]
-                calc = PricingCalculator()
+            winner_engine = WinnerEngine()
+            eval_res = winner_engine.evaluate_plan(selected_plan)
+            calc = PricingCalculator()
+
+            if eval_res.has_verified_winner and eval_res.lowest_verified:
+                winner = eval_res.lowest_verified
                 res = calc.calculate(winner.amount, winner.fx_rate_used)
 
                 col_w1, col_w2, col_w3 = st.columns(3)
-                col_w1.metric("🏆 Lowest Sourcing Cost", f"${winner.amount:.2f} {winner.currency}", f"Rs. {winner.amount_pkr:,.0f} PKR")
+                col_w1.metric("🏆 Lowest Verified Cost", f"${winner.amount:.2f} {winner.currency}", f"Rs. {winner.amount_pkr:,.0f} PKR")
                 col_w2.metric("🏷 Suggested Web Retail", f"Rs. {res.suggested_retail_pkr:,.0f} PKR", f"{res.net_margin_pct}% margin")
                 col_w3.metric("💰 Estimated Net Profit", f"+Rs. {res.estimated_net_profit_pkr:,.0f} PKR")
+                st.success(f"Verified Winner: **{winner.supplier.canonical_name}** ({winner.warranty}) | Evidence: {winner.source_url or 'Verified Source'}")
+            else:
+                st.warning("⏳ **No Verified Winner Yet** — Live inspection or recent proof required before awarding official winner status.")
+                if eval_res.lowest_advertised:
+                    low = eval_res.lowest_advertised
+                    res = calc.calculate(low.amount, low.fx_rate_used)
+                    col_w1, col_w2, col_w3 = st.columns(3)
+                    col_w1.metric("📢 Lowest Advertised (Unverified)", f"${low.amount:.2f} {low.currency}", f"Rs. {low.amount_pkr:,.0f} PKR")
+                    col_w2.metric("🏷 Provisional Retail", f"Rs. {res.suggested_retail_pkr:,.0f} PKR", f"{res.net_margin_pct}% margin")
+                    col_w3.metric("💰 Provisional Net Profit", f"+Rs. {res.estimated_net_profit_pkr:,.0f} PKR")
 
-                st.subheader("All Supplier Offers for This Exact Plan:")
-                comp_rows = []
-                for idx, o in enumerate(obs_list, 1):
-                    comp_rows.append({
-                        "Rank": f"#{idx}" if idx > 1 else "🏆 Winner",
-                        "Supplier": o.supplier.canonical_name,
-                        "Handle": o.supplier.primary_handle,
-                        "Price": f"${o.amount:.2f} {o.currency}",
-                        "Price (PKR)": f"Rs. {o.amount_pkr:,.0f}",
-                        "Warranty": o.warranty,
-                        "Verification": o.verification_status.value,
-                        "Risk Level": o.risk_level.value,
-                        "Source Link": o.source_url or "Private Bot"
-                    })
-                st.dataframe(pd.DataFrame(comp_rows), use_container_width=True)
+            st.subheader("All Supplier Offers for This Exact Plan:")
+            comp_rows = []
+            for idx, o in enumerate(obs_list, 1):
+                is_win = (eval_res.has_verified_winner and o == eval_res.lowest_verified)
+                reasons = eval_res.disqualification_reasons.get(o.id, ["Verified offer" if is_win else "Pending verification"])
+                comp_rows.append({
+                    "Rank": "🏆 Verified Winner" if is_win else (f"📢 #{idx} (Lowest)" if idx == 1 else f"#{idx}"),
+                    "Supplier": o.supplier.canonical_name,
+                    "Handle": o.supplier.primary_handle,
+                    "Price": f"${o.amount:.2f} {o.currency}",
+                    "Price (PKR)": f"Rs. {o.amount_pkr:,.0f}",
+                    "Warranty": o.warranty,
+                    "Verification": o.verification_status.value,
+                    "Audit / Eligibility": "; ".join(reasons),
+                    "Risk Level": o.risk_level.value,
+                    "Source Link": o.source_url or "Private Bot"
+                })
+            st.dataframe(pd.DataFrame(comp_rows), use_container_width=True)
 
 # -------------------------------------------------------------
 # 5. QUOTE HISTORY

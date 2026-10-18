@@ -23,6 +23,23 @@ from src.models import (
 )
 from src.matching import parse_duration, parse_access_type, generate_matching_key
 from src.excel import export_master_catalog
+from src.research import classify_navigation_label
+
+
+def load_local_env() -> None:
+    """Load Telegram-only values from the private .env file without logging them."""
+    env_file = Path(__file__).resolve().parent.parent / ".env"
+    if not env_file.exists():
+        return
+    allowed = {"TELEGRAM_API_ID", "TELEGRAM_API_HASH", "ALLOW_TELETHON_USER_SESSION"}
+    for raw_line in env_file.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if key in allowed and not os.getenv(key):
+            os.environ[key] = value.strip().strip('"').strip("'")
 
 # Target bot handles to explore
 TARGET_BOTS = [
@@ -71,8 +88,11 @@ async def crawl_bot_shop(client, bot_handle: str):
             for btn in row:
                 btn_text = btn.text.strip()
                 print(f"     [BUTTON] {btn_text}")
-                if any(k in btn_text.lower() for k in ["product", "shop", "store", "catalog", "buy"]):
+                safe, reason = classify_navigation_label(btn_text)
+                if safe and any(k in btn_text.lower() for k in ["product", "shop", "store", "catalog"]):
                     products_btn = btn
+                elif not safe:
+                    print(f"     [SKIPPED {reason}] {btn_text}")
                     
         # Click the Products button if found
         if products_btn:
@@ -100,6 +120,11 @@ async def crawl_bot_shop(client, bot_handle: str):
     return []
 
 async def main():
+    load_local_env()
+    if os.getenv("ALLOW_TELETHON_USER_SESSION") != "1":
+        print("MTProto crawling is disabled. Set ALLOW_TELETHON_USER_SESSION=1 only after explicit owner approval.")
+        return
+
     api_id = os.getenv("TELEGRAM_API_ID")
     api_hash = os.getenv("TELEGRAM_API_HASH")
     

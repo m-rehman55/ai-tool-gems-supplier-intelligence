@@ -51,6 +51,14 @@ class ResearchStatus(str, Enum):
     BLOCKED = "BLOCKED"
     FAILED = "FAILED"
 
+class ScanRunStatus(str, Enum):
+    QUEUED = "QUEUED"
+    RUNNING = "RUNNING"
+    SUCCEEDED = "SUCCEEDED"
+    PARTIAL = "PARTIAL"
+    BLOCKED = "BLOCKED"
+    FAILED = "FAILED"
+
 class Supplier(Base):
     __tablename__ = "suppliers"
     
@@ -220,6 +228,45 @@ class ResearchQueue(Base):
     next_action = Column(String(100), default="INSPECT_PUBLIC_URL")
 
     supplier = relationship("Supplier", back_populates="research_tasks")
+
+class ResearchRun(Base):
+    """Durable status for a single supplier scan or a broader scan job."""
+    __tablename__ = "research_runs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=True)
+    access_method = Column(String(50), nullable=False)  # PUBLIC_PREVIEW, MT_PROTO, MANUAL_IMPORT
+    status = Column(SQLEnum(ScanRunStatus), default=ScanRunStatus.QUEUED, nullable=False)
+    started_at = Column(DateTime(timezone=True), default=utc_now)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
+    suppliers_attempted = Column(Integer, default=0)
+    suppliers_accessed = Column(Integer, default=0)
+    product_pages_inspected = Column(Integer, default=0)
+    observations_saved = Column(Integer, default=0)
+    error_category = Column(String(80), default="")
+    error_message = Column(Text, default="")
+    summary = Column(Text, default="")
+
+    checkpoints = relationship("ResearchCheckpoint", back_populates="run", cascade="all, delete-orphan")
+
+class ResearchCheckpoint(Base):
+    """Restart point for safe menu/category/page navigation."""
+    __tablename__ = "research_checkpoints"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    run_id = Column(Integer, ForeignKey("research_runs.id"), nullable=False)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False)
+    checkpoint_type = Column(String(50), nullable=False)  # MENU, CATEGORY, PAGE, PRODUCT
+    navigation_token = Column(String(255), nullable=False)
+    status = Column(String(30), default="PENDING")
+    detail = Column(Text, default="")
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    run = relationship("ResearchRun", back_populates="checkpoints")
+
+    __table_args__ = (
+        UniqueConstraint("run_id", "supplier_id", "checkpoint_type", "navigation_token", name="uq_checkpoint_scope"),
+    )
 
 class AuditLog(Base):
     __tablename__ = "audit_log"

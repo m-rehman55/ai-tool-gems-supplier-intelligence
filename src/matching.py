@@ -68,7 +68,7 @@ def parse_access_type(raw_text: str) -> AccessType:
         return AccessType.INVITE
     elif 'promo' in t or re.search(r'\bcode\b', t) or 'voucher' in t:
         return AccessType.PROMO_CODE
-    elif 'private' in t or 'personal' in t or 'email|password' in t or '2fa' in t:
+    elif 'private' in t or 'personal' in t or re.search(r'\b(?:email|password)\b', t) or '2fa' in t:
         return AccessType.PRIVATE
     return AccessType.UNKNOWN
 

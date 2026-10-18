@@ -22,6 +22,7 @@ def test_parse_duration():
 
 def test_parse_access_type():
     assert parse_access_type("Private Account on your email") == AccessType.PRIVATE
+    assert parse_access_type("Account delivered by email and password") == AccessType.PRIVATE
     assert parse_access_type("Netflix 1 Profile Slot") == AccessType.SHARED
     assert parse_access_type("ChatGPT Edu K12 student") == AccessType.EDU
     assert parse_access_type("Windows 11 Retail License Key") == AccessType.KEY

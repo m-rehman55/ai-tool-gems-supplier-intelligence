@@ -80,6 +80,25 @@ class TelegramPublicChannelAdapter:
 
         return self.parse_html_messages(content, clean_handle)
 
+    @staticmethod
+    def is_promotional_or_referral(text: str) -> bool:
+        """Detects referral incentives, wallet bonuses, and non-product broadcasts."""
+        t = text.lower()
+        patterns = [
+            r'referral',
+            r'refer\s*&\s*earn',
+            r'invite\s+(?:your\s+)?friends',
+            r'in\s+your\s+wallet',
+            r'earn\s+free\s+balance',
+            r'top\s*up\s+wallet',
+            r'deposit\s+bonus',
+            r'giveaway',
+            r'bounty',
+            r'cashback',
+            r'invite\s+\d+\s+friends',
+        ]
+        return any(re.search(pat, t) for pat in patterns)
+
     def parse_raw_announcements(self, raw_messages: List[str], channel: str) -> List[Dict[str, Any]]:
         """Parses real raw channel announcement strings into structured quote records."""
         parsed_records = []
@@ -88,6 +107,8 @@ class TelegramPublicChannelAdapter:
                 continue
                 
             clean_text = text.strip()
+            if self.is_promotional_or_referral(clean_text):
+                continue
             
             # Price parsing (handles flash sale arrows $A -> $B and direct prices)
             price_val = None
@@ -99,7 +120,7 @@ class TelegramPublicChannelAdapter:
                 if p_m:
                     price_val = float(p_m.group(1))
                     
-            if not price_val:
+            if not price_val or price_val < 0.20:
                 continue
 
             # Warranty extraction
@@ -160,7 +181,7 @@ class TelegramPublicChannelAdapter:
             clean_text = re.sub(r'<[^>]+>', '', clean_text)
             clean_text = html.unescape(clean_text).strip()
             
-            if len(clean_text) < 15:
+            if len(clean_text) < 15 or self.is_promotional_or_referral(clean_text):
                 continue
 
             # Extract post date
@@ -178,6 +199,9 @@ class TelegramPublicChannelAdapter:
                 p_m = re.search(r'(?:Price|Price\s*:|\$|💵|💰|💲)\s*(?:[:\s]*)(?:\$|USDT)?\s*(\d+(?:\.\d{1,2})?)\s*(?:USDT|\$)?', clean_text, re.IGNORECASE)
                 if p_m:
                     price_val = float(p_m.group(1))
+
+            if not price_val or price_val < 0.20:
+                continue
 
             parsed_records.append({
                 "channel": channel,

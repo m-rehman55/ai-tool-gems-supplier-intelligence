@@ -19,6 +19,7 @@ from src.pricing import PricingCalculator
 from src.fx import FxEngine
 from src.alerts import AlertEngine
 from src.adapters.public_telegram import TelegramPublicChannelAdapter
+from src.winner import WinnerEngine
 from src.models import Supplier, ProductPlan, PriceObservation, VerificationStatus
 
 def cmd_init() -> None:
@@ -41,6 +42,7 @@ def cmd_best(query: str) -> None:
 
         fx = FxEngine(db)
         calc = PricingCalculator()
+        winner_engine = WinnerEngine()
 
         for pl in matched_plans:
             print("\n" + "=" * 65)
@@ -49,32 +51,43 @@ def cmd_best(query: str) -> None:
             print(f"🔑 Matching Key: {pl.matching_key}")
             print("-" * 65)
             
-            # Find active price observations
             obs_list = sorted(pl.observations, key=lambda x: x.amount_pkr)
             if not obs_list:
                 print("⚠️  No supplier quotes recorded yet. Status: PENDING_QUOTES")
                 continue
                 
-            winner = obs_list[0]
-            sup = winner.supplier
+            eval_res = winner_engine.evaluate_plan(pl)
             
-            # Pricing math
-            pricing = calc.calculate(winner.amount, winner.fx_rate_used)
-            
-            print(f"🏆 BEST SUPPLIER: {sup.canonical_name} ({sup.primary_handle})")
-            print(f"💵 Wholesale Cost: ${winner.amount:.2f} {winner.currency} (≈ Rs. {winner.amount_pkr:,.2f} PKR)")
-            print(f"🛡 Warranty: {winner.warranty}")
-            print(f"📦 Status / Evidence: {winner.verification_status.value} ({winner.capture_method})")
-            print(f"🔗 Supplier Link: {sup.public_url or ('https://t.me/' + sup.primary_handle.lstrip('@'))}")
-            print(f"🏷 Suggested Web Retail: Rs. {pricing.suggested_retail_pkr:,.0f} PKR")
-            print(f"💰 Estimated Net Profit: +Rs. {pricing.estimated_net_profit_pkr:,.0f} PKR ({pricing.net_margin_pct}% margin)")
-            if pricing.has_margin_conflict:
-                print(f"⚠️  {pricing.conflict_notes}")
+            if eval_res.has_verified_winner and eval_res.lowest_verified:
+                winner = eval_res.lowest_verified
+                sup = winner.supplier
+                pricing = calc.calculate(winner.amount, winner.fx_rate_used)
+                
+                print(f"🏆 LOWEST VERIFIED SUPPLIER: {sup.canonical_name} ({sup.primary_handle})")
+                print(f"💵 Wholesale Cost: ${winner.amount:.2f} {winner.currency} (≈ Rs. {winner.amount_pkr:,.2f} PKR)")
+                print(f"🛡 Warranty: {winner.warranty}")
+                print(f"📦 Status / Evidence: {winner.verification_status.value} ({winner.capture_method})")
+                print(f"🔗 Supplier Link: {sup.public_url or ('https://t.me/' + sup.primary_handle.lstrip('@'))}")
+                print(f"🏷 Suggested Web Retail: Rs. {pricing.suggested_retail_pkr:,.0f} PKR")
+                print(f"💰 Estimated Net Profit: +Rs. {pricing.estimated_net_profit_pkr:,.0f} PKR ({pricing.net_margin_pct}% margin)")
+                if pricing.has_margin_conflict:
+                    print(f"⚠️  {pricing.conflict_notes}")
+            else:
+                print("⏳ NO VERIFIED WINNER YET (Awaiting recent proof / verified quote)")
+                if eval_res.lowest_advertised:
+                    low = eval_res.lowest_advertised
+                    pricing = calc.calculate(low.amount, low.fx_rate_used)
+                    reasons = eval_res.disqualification_reasons.get(low.id, ["Unverified claim"])
+                    print(f"📢 Lowest Advertised (Pending Verification): {low.supplier.canonical_name}")
+                    print(f"   Amount: ${low.amount:.2f} {low.currency} (~Rs. {low.amount_pkr:,.0f} PKR) | {low.warranty}")
+                    print(f"   Status: {low.verification_status.value} | Pending reason: {'; '.join(reasons)}")
+                    print(f"   Provisional Retail: Rs. {pricing.suggested_retail_pkr:,.0f} PKR")
 
             if len(obs_list) > 1:
-                print(f"\n📊 Other Suppliers ({len(obs_list)-1} alternatives):")
-                for alt in obs_list[1:]:
-                    print(f"   • {alt.supplier.canonical_name}: ${alt.amount:.2f} {alt.currency} (~Rs. {alt.amount_pkr:,.0f}) | {alt.warranty} | {alt.verification_status.value}")
+                print(f"\n📊 All Supplier Quotes ({len(obs_list)} total):")
+                for alt in obs_list:
+                    verified_tag = "✅ VERIFIED" if alt.verification_status == VerificationStatus.VERIFIED else f"⏳ {alt.verification_status.value}"
+                    print(f"   • {alt.supplier.canonical_name}: ${alt.amount:.2f} {alt.currency} (~Rs. {alt.amount_pkr:,.0f}) | {alt.warranty} | {verified_tag}")
 
 def cmd_export(output: str = None) -> None:
     print("[EXPORT] Generating master_catalog.xlsx with 13 worksheets...")
@@ -86,6 +99,9 @@ def cmd_export(output: str = None) -> None:
 def match_announcement_to_plan(db, clean_text: str):
     """Matches raw announcement text to canonical product and exact plan."""
     from src.matching import parse_duration, parse_access_type, normalize_string
+    if TelegramPublicChannelAdapter.is_promotional_or_referral(clean_text):
+        return None
+        
     t = clean_text.lower()
     
     # Keyword to product mapping

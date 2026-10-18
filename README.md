@@ -136,6 +136,20 @@ python -m src.cli init
 pytest --cov=src tests -v
 ```
 
+### Optional: authorized local Telegram diagnostics
+
+The public-source workflow does not require a Telegram login. For an approved
+local user-session scan, first run the non-authenticating diagnostic:
+
+```powershell
+python scripts\telegram_diagnostics.py
+```
+
+It reports only whether required settings/session files exist; it never prints
+credentials, authenticates, or sends messages. The authorized crawler remains
+disabled until the owner explicitly sets `ALLOW_TELETHON_USER_SESSION=1` in a
+private `.env` file. Do not place Telegram credentials or session files in CI.
+
 ---
 
 ## 4. Operational CLI Commands

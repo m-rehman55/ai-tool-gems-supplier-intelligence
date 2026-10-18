@@ -41,6 +41,19 @@
   - Bots requiring `/start` or interactive menu clicks are safely routed to the **Research Queue** with the status `INTERACTIVE_MENU_REQUIRED`.
   - The system will never fabricate an automated bot scrap or fake quote.
 
+### Local authorized user sessions
+
+- The optional Telethon crawler is disabled until `ALLOW_TELETHON_USER_SESSION=1`
+  is set locally by the owner.
+- Use only the owner's own Telegram API credentials and session on a trusted
+  machine. Session files remain under `data/`, are Git-ignored, and must never
+  be copied to CI artifacts, cloud backups, screenshots, or the public repo.
+- The crawler must stop before Buy, Order, Checkout, payment, wallet, or
+  confirmation controls. A visible product-detail record is sufficient for
+  research.
+- Run `scripts/telegram_diagnostics.py` before enabling a session. Its output
+  reports configuration state only and never prints secret values.
+
 ---
 
 ## 4. Licensing & Risk Assessment Rules

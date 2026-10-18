@@ -123,14 +123,16 @@ def export_master_catalog(db, output_path: Optional[Path] = None) -> Path:
     style_sheet(ws_obs, obs_headers, obs_rows)
 
     # 6. Cheapest Verified (Live Best Rates)
+    from src.winner import WinnerEngine
+    winner_engine = WinnerEngine(freshness_hours=settings.quote_freshness_hours)
+    
     ws_cheap = wb.create_sheet("Cheapest Verified")
-    cheap_headers = ["Product Plan", "Duration", "Access Type", "Winner Supplier", "Cost Currency", "Cost Amount", "Cost PKR", "Warranty", "Status"]
+    cheap_headers = ["Product Plan", "Duration", "Access Type", "Winner Supplier", "Cost Currency", "Cost Amount", "Cost PKR", "Warranty", "Verification Status", "Audit Notes"]
     cheap_rows = []
     for pl in db.query(ProductPlan).all():
-        # Get active observations sorted by price
-        obs_list = sorted(pl.observations, key=lambda x: x.amount_pkr)
-        if obs_list:
-            best = obs_list[0]
+        eval_res = winner_engine.evaluate_plan(pl)
+        if eval_res.has_verified_winner and eval_res.lowest_verified:
+            best = eval_res.lowest_verified
             cheap_rows.append([
                 f"{pl.product.name} - {pl.plan_name}",
                 pl.duration,
@@ -140,10 +142,23 @@ def export_master_catalog(db, output_path: Optional[Path] = None) -> Path:
                 best.amount,
                 best.amount_pkr,
                 best.warranty,
-                best.verification_status.value
+                best.verification_status.value,
+                "VERIFIED_WINNER"
             ])
         else:
-            cheap_rows.append([f"{pl.product.name} - {pl.plan_name}", pl.duration, pl.access_type.value, "No Verified Winner Yet", "-", "-", "-", "-", "PENDING_QUOTES"])
+            reasons = "; ".join([r for sub in eval_res.disqualification_reasons.values() for r in sub]) if eval_res.disqualification_reasons else "No quotes recorded"
+            cheap_rows.append([
+                f"{pl.product.name} - {pl.plan_name}",
+                pl.duration,
+                pl.access_type.value,
+                "No Verified Winner Yet",
+                "-",
+                "-",
+                "-",
+                "-",
+                eval_res.status_summary,
+                reasons[:120]
+            ])
     style_sheet(ws_cheap, cheap_headers, cheap_rows)
 
     # 7. Price History

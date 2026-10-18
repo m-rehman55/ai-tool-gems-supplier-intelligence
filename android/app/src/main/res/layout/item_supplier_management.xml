@@ -57,7 +57,28 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
 
+            <TextView
+                android:id="@+id/tvSupplierToolsCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="📦 0 Tools in Catalog"
+                android:textColor="@color/winner_gold"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
         </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnViewCatalog"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="6dp"
+            android:text="📦 Catalog"
+            android:textColor="@color/accent"
+            android:textSize="11sp"
+            app:strokeColor="@color/accent" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTestSupplier"

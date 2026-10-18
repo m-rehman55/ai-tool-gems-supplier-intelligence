@@ -177,3 +177,74 @@ data class NavigationTimelineEvent(
     val decisionReason: String,
     val outcomeStatus: String
 )
+
+/**
+ * Record of price change (fluctuation) for an observation over time.
+ */
+data class PriceHistoryEntry(
+    val id: Long = 0,
+    val observationId: Long,
+    val supplierId: Long,
+    val productName: String,
+    val planName: String,
+    val oldAmount: Double?,
+    val newAmount: Double,
+    val currency: String,
+    val amountPkr: Double,
+    val changedAt: Long
+) {
+    val percentageChange: Double?
+        get() = if (oldAmount != null && oldAmount > 0) {
+            ((newAmount - oldAmount) / oldAmount) * 100.0
+        } else null
+
+    val isPriceDrop: Boolean
+        get() = oldAmount != null && newAmount < oldAmount
+
+    val isPriceIncrease: Boolean
+        get() = oldAmount != null && newAmount > oldAmount
+}
+
+/**
+ * Comprehensive catalog profile for an individual supplier bot.
+ * Contains all tools harvested from this bot and summary statistics.
+ */
+data class BotCatalogSummary(
+    val supplierId: Long,
+    val supplierName: String,
+    val supplierHandle: String,
+    val source: String,
+    val totalProducts: Int,
+    val minPriceUsd: Double,
+    val maxPriceUsd: Double,
+    val minPricePkr: Double,
+    val maxPricePkr: Double,
+    val distinctToolsCount: Int,
+    val lastObservedAt: Long?,
+    val categories: List<String>,
+    val products: List<PriceObservation>
+)
+
+/**
+ * Pakistani Resale Market Profit Margin & Selling Price calculation.
+ */
+data class ProfitCalculation(
+    val wholesalePkr: Double,
+    val wholesaleUsd: Double,
+    val marginPercentage: Double,
+    val fixedMarkupPkr: Double = 0.0
+) {
+    val suggestedRetailPkr: Double
+        get() {
+            val withMargin = wholesalePkr * (1.0 + marginPercentage / 100.0) + fixedMarkupPkr
+            // Round to nearest Rs. 50 for clean Pakistani pricing (e.g. Rs. 1,850 or Rs. 1,900)
+            return Math.ceil(withMargin / 50.0) * 50.0
+        }
+
+    val netProfitPkr: Double
+        get() = Math.max(0.0, suggestedRetailPkr - wholesalePkr)
+
+    val effectiveMarginPercent: Double
+        get() = if (wholesalePkr > 0) (netProfitPkr / wholesalePkr) * 100.0 else marginPercentage
+}
+

@@ -440,7 +440,9 @@ class MainActivity : AppCompatActivity() {
         val tgCount = counts[SupplierSource.TELEGRAM_DISCOVERY.code] ?: 0
         val seedCount = counts[SupplierSource.SEED_DATA.code] ?: 0
         binding.tvCatalogCountSummary.text = "Suppliers: ${suppliersList.size} ($tgCount Telegram, $seedCount Seed)"
-        binding.recyclerViewResults.adapter = SuppliersAdapter(suppliersList,
+        binding.recyclerViewResults.adapter = SuppliersAdapter(
+            suppliersList,
+            database = database,
             onToggle = { supplier, isEnabled ->
                 database.setSupplierEnabled(supplier.id, isEnabled)
                 Toast.makeText(this, "${supplier.canonicalName}: " + if (isEnabled) "Enabled" else "Disabled", Toast.LENGTH_SHORT).show()
@@ -448,6 +450,9 @@ class MainActivity : AppCompatActivity() {
             onCrawl = { supplier ->
                 Toast.makeText(this, "Crawling ${supplier.primaryHandle}...", Toast.LENGTH_SHORT).show()
                 performSupplierSpecificScan(supplier)
+            },
+            onViewCatalog = { supplier ->
+                showBotCatalogDialog(supplier)
             }
         )
     }
@@ -526,6 +531,9 @@ class MainActivity : AppCompatActivity() {
             .setMessage(msg)
             .setPositiveButton("Copy for Store") { _, _ ->
                 copyToClipboard(obs)
+            }
+            .setNeutralButton("🇵🇰 Resale Calculator") { _, _ ->
+                showResaleCalculatorDialog(obs)
             }
             .setNegativeButton("Close", null)
             .show()
@@ -907,7 +915,7 @@ class MainActivity : AppCompatActivity() {
                 copyToClipboard(item)
             }
             holder.view.setOnClickListener {
-                copyToClipboard(item)
+                showObservationDetailsDialog(item)
             }
         }
     }
@@ -915,8 +923,10 @@ class MainActivity : AppCompatActivity() {
     // Suppliers Directory Adapter (Tab 2: Bots Management)
     inner class SuppliersAdapter(
         private val list: List<Supplier>,
+        private val database: LocalDatabase,
         private val onToggle: (Supplier, Boolean) -> Unit,
-        private val onCrawl: (Supplier) -> Unit
+        private val onCrawl: (Supplier) -> Unit,
+        private val onViewCatalog: (Supplier) -> Unit
     ) : RecyclerView.Adapter<SuppliersAdapter.ViewHolder>() {
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -924,6 +934,8 @@ class MainActivity : AppCompatActivity() {
             val tvHandle: TextView = view.findViewById(R.id.tvSupplierHandle)
             val tvSource: TextView = view.findViewById(R.id.tvSupplierSource)
             val tvStatus: TextView = view.findViewById(R.id.tvSupplierStatus)
+            val tvToolsCount: TextView = view.findViewById(R.id.tvSupplierToolsCount)
+            val btnCatalog: View = view.findViewById(R.id.btnViewCatalog)
             val btnTest: View = view.findViewById(R.id.btnTestSupplier)
             val switchActive: com.google.android.material.switchmaterial.SwitchMaterial = view.findViewById(R.id.switchSupplierActive)
         }
@@ -951,8 +963,11 @@ class MainActivity : AppCompatActivity() {
                     getColor(R.color.accent)
             )
             holder.tvStatus.text = "Reliability: ${supplier.reliabilityScore.toInt()}% | ${supplier.notes.take(45)}"
-            holder.switchActive.isChecked = supplier.isEnabled
 
+            val count = database.getProductsCountForSupplier(supplier.id)
+            holder.tvToolsCount.text = "📦 $count Tools in Catalog"
+
+            holder.switchActive.isChecked = supplier.isEnabled
             holder.switchActive.setOnCheckedChangeListener { _, isChecked ->
                 onToggle(supplier, isChecked)
             }
@@ -960,8 +975,288 @@ class MainActivity : AppCompatActivity() {
             holder.btnTest.setOnClickListener {
                 onCrawl(supplier)
             }
+
+            holder.btnCatalog.setOnClickListener {
+                onViewCatalog(supplier)
+            }
+
+            holder.itemView.setOnClickListener {
+                onViewCatalog(supplier)
+            }
         }
 
         override fun getItemCount() = list.size
+    }
+
+    // =========================================================================
+    // BOT CATALOG PORTFOLIO & PAKISTAN RESALE PRICING CALCULATOR
+    // =========================================================================
+
+    private fun showBotCatalogDialog(supplier: Supplier) {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_bot_catalog, null)
+        val tvTitle = view.findViewById<TextView>(R.id.tvBotCatalogTitle)
+        val tvHandle = view.findViewById<TextView>(R.id.tvBotCatalogHandle)
+        val tvBadge = view.findViewById<TextView>(R.id.tvBotCatalogBadge)
+        val tvTotalTools = view.findViewById<TextView>(R.id.tvBotTotalTools)
+        val tvPriceRange = view.findViewById<TextView>(R.id.tvBotPriceRange)
+        val tvMemoryStatus = view.findViewById<TextView>(R.id.tvBotMemoryStatus)
+        val chipGroupMargin = view.findViewById<com.google.android.material.chip.ChipGroup>(R.id.chipGroupResaleMargin)
+        val etSearch = view.findViewById<EditText>(R.id.etSearchBotProducts)
+        val rvProducts = view.findViewById<RecyclerView>(R.id.rvBotProducts)
+        val tvEmpty = view.findViewById<TextView>(R.id.tvBotEmptyProducts)
+        val btnExport = view.findViewById<View>(R.id.btnExportFullBotCatalog)
+        val btnCrawl = view.findViewById<View>(R.id.btnCrawlBotNow)
+        val btnClose = view.findViewById<View>(R.id.btnCloseBotCatalog)
+
+        val summary = database.getSupplierCatalogSummary(supplier.id)
+        val allProducts = summary.products.toMutableList()
+        var currentMarginPercent = 30.0
+        var currentFixedMarkup = 0.0
+
+        tvTitle.text = summary.supplierName
+        tvHandle.text = summary.supplierHandle
+
+        val isTg = summary.source == SupplierSource.TELEGRAM_DISCOVERY.code
+        tvBadge.text = if (isTg) "🤖 TG BOT" else "📦 SEED BOT"
+        tvBadge.setBackgroundColor(getColor(if (isTg) R.color.badge_verified else R.color.card_elevated))
+        tvBadge.setTextColor(getColor(if (isTg) R.color.badge_verified_text else R.color.accent))
+
+        tvTotalTools.text = "${summary.totalProducts} Tools (${summary.distinctToolsCount} distinct)"
+        if (summary.totalProducts > 0) {
+            tvPriceRange.text = "$${String.format(Locale.ROOT, "%.2f", summary.minPriceUsd)} - $${String.format(Locale.ROOT, "%.2f", summary.maxPriceUsd)} / Rs. ${String.format(Locale.ROOT, "%,.0f", summary.minPricePkr)} - Rs. ${String.format(Locale.ROOT, "%,.0f", summary.maxPricePkr)}"
+            tvEmpty.visibility = View.GONE
+            rvProducts.visibility = View.VISIBLE
+        } else {
+            tvPriceRange.text = "No prices extracted yet"
+            tvEmpty.visibility = View.VISIBLE
+            rvProducts.visibility = View.GONE
+        }
+
+        val cp = database.getCheckpoint(supplier.id)
+        val checkpointInfo = if (cp != null) "Resumable Checkpoint (${cp.state.name}, depth ${cp.currentDepth})" else "Menu structure indexed"
+        tvMemoryStatus.text = "🧠 AI Memory: $checkpointInfo | Reliability: ${supplier.reliabilityScore.toInt()}%"
+
+        rvProducts.layoutManager = LinearLayoutManager(this)
+        var botAdapter: BotProductsAdapter? = null
+
+        fun updateList(query: String) {
+            val q = query.trim().lowercase(Locale.ROOT)
+            val filtered = if (q.isEmpty()) {
+                allProducts
+            } else {
+                allProducts.filter {
+                    it.productName.lowercase(Locale.ROOT).contains(q) ||
+                    it.planName.lowercase(Locale.ROOT).contains(q) ||
+                    it.matchingKey.lowercase(Locale.ROOT).contains(q)
+                }
+            }
+            botAdapter = BotProductsAdapter(filtered, currentMarginPercent, currentFixedMarkup) { obs ->
+                showObservationDetailsDialog(obs)
+            }
+            rvProducts.adapter = botAdapter
+        }
+
+        chipGroupMargin.setOnCheckedStateChangeListener { _, checkedIds ->
+            when {
+                checkedIds.contains(R.id.chipMargin20) -> {
+                    currentMarginPercent = 20.0
+                    currentFixedMarkup = 0.0
+                }
+                checkedIds.contains(R.id.chipMargin30) -> {
+                    currentMarginPercent = 30.0
+                    currentFixedMarkup = 0.0
+                }
+                checkedIds.contains(R.id.chipMargin500Pkr) -> {
+                    currentMarginPercent = 0.0
+                    currentFixedMarkup = 500.0
+                }
+            }
+            updateList(etSearch.text?.toString() ?: "")
+        }
+
+        etSearch.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updateList(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
+        updateList("")
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(view)
+            .create()
+
+        btnExport.setOnClickListener {
+            copyFullBotCatalogToClipboard(supplier, summary, currentMarginPercent, currentFixedMarkup)
+        }
+
+        btnCrawl.setOnClickListener {
+            dialog.dismiss()
+            performSupplierSpecificScan(supplier)
+        }
+
+        btnClose.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun copyFullBotCatalogToClipboard(
+        supplier: Supplier,
+        summary: BotCatalogSummary,
+        marginPercent: Double,
+        fixedMarkup: Double
+    ) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val sb = StringBuilder()
+        sb.append("🔥 AI Tool Gems Pakistan — Verified Wholesale Catalog\n")
+        sb.append("🤖 Supplier Bot: ${supplier.canonicalName} (${supplier.primaryHandle})\n")
+        sb.append("📦 Total Tools Harvested: ${summary.totalProducts}\n")
+        sb.append("════════════════════════════════════════\n\n")
+
+        for ((idx, p) in summary.products.withIndex()) {
+            val calc = ProfitCalculation(p.amountPkr, p.amount, marginPercent, fixedMarkup)
+            sb.append("${idx + 1}. ${p.productName} — ${p.planName}\n")
+            sb.append("   • Access: ${p.accessType.name} | Duration: ${p.duration} | Warranty: ${p.warranty}\n")
+            sb.append("   • Wholesale: $${String.format(Locale.ROOT, "%.2f", p.amount)} ${p.currency} (~Rs. ${String.format(Locale.ROOT, "%,.0f", p.amountPkr)} PKR)\n")
+            sb.append("   • 🇵🇰 Resale Price: Rs. ${String.format(Locale.ROOT, "%,.0f", calc.suggestedRetailPkr)} PKR (Profit: Rs. ${String.format(Locale.ROOT, "%,.0f", calc.netProfitPkr)})\n\n")
+        }
+
+        sb.append("════════════════════════════════════════\n")
+        sb.append("Order Genuine AI Tools: aitoolgems.tech | WhatsApp")
+
+        val clip = ClipData.newPlainText("Bot Catalog Portfolio", sb.toString())
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(this, "✓ Copied ${summary.totalProducts} tools catalog to clipboard!", Toast.LENGTH_LONG).show()
+    }
+
+    private fun showResaleCalculatorDialog(obs: PriceObservation) {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_resale_calculator, null)
+        val tvHeader = view.findViewById<TextView>(R.id.tvCalcProductHeader)
+        val tvCost = view.findViewById<TextView>(R.id.tvCalcWholesaleCost)
+        val tvHandle = view.findViewById<TextView>(R.id.tvCalcSupplierHandle)
+        val chipGroup = view.findViewById<com.google.android.material.chip.ChipGroup>(R.id.chipGroupCalcMargin)
+        val tvRetail = view.findViewById<TextView>(R.id.tvCalcRetailPricePkr)
+        val tvProfit = view.findViewById<TextView>(R.id.tvCalcNetProfitPkr)
+        val btnShare = view.findViewById<View>(R.id.btnCalcShareWhatsApp)
+        val btnClose = view.findViewById<View>(R.id.btnCalcClose)
+
+        tvHeader.text = "${obs.productName} (${obs.planName} • ${obs.duration} • ${obs.accessType.name})"
+        tvCost.text = "$${String.format(Locale.ROOT, "%.2f", obs.amount)} ${obs.currency} (~Rs. ${String.format(Locale.ROOT, "%,.0f", obs.amountPkr)} PKR)"
+        tvHandle.text = "Supplier Bot: ${obs.supplierHandle} (${obs.supplierName})"
+
+        var marginPct = 25.0
+        var fixedMarkup = 0.0
+
+        fun refreshCalc() {
+            val calc = ProfitCalculation(obs.amountPkr, obs.amount, marginPct, fixedMarkup)
+            tvRetail.text = "Rs. ${String.format(Locale.ROOT, "%,.0f", calc.suggestedRetailPkr)} PKR"
+            tvProfit.text = "Rs. ${String.format(Locale.ROOT, "%,.0f", calc.netProfitPkr)} PKR (${calc.effectiveMarginPercent.toInt()}%)"
+        }
+
+        chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            when {
+                checkedIds.contains(R.id.chipCalcMargin15) -> {
+                    marginPct = 15.0
+                    fixedMarkup = 0.0
+                }
+                checkedIds.contains(R.id.chipCalcMargin25) -> {
+                    marginPct = 25.0
+                    fixedMarkup = 0.0
+                }
+                checkedIds.contains(R.id.chipCalcMargin35) -> {
+                    marginPct = 35.0
+                    fixedMarkup = 0.0
+                }
+                checkedIds.contains(R.id.chipCalcMargin500) -> {
+                    marginPct = 0.0
+                    fixedMarkup = 500.0
+                }
+            }
+            refreshCalc()
+        }
+
+        refreshCalc()
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(view)
+            .create()
+
+        btnShare.setOnClickListener {
+            val calc = ProfitCalculation(obs.amountPkr, obs.amount, marginPct, fixedMarkup)
+            copySingleProductQuote(obs, calc)
+            dialog.dismiss()
+        }
+
+        btnClose.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun copySingleProductQuote(observation: PriceObservation, calc: ProfitCalculation) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val text = """
+✨ AI Tool Gems Pakistan ✨
+🔥 Tool: ${observation.productName}
+🏷 Plan: ${observation.planName}
+⏱ Duration: ${observation.duration}
+👤 Access: ${observation.accessType.name}
+💰 Customer Price: Rs. ${String.format(Locale.ROOT, "%,.0f", calc.suggestedRetailPkr)} PKR
+🛡 Warranty: ${observation.warranty}
+⚡ Instant Activation & Full Replacement Guarantee
+📩 Order Now via WhatsApp / aitoolgems.tech
+        """.trimIndent()
+        val clip = ClipData.newPlainText("Customer Quotation", text)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(this, "✓ WhatsApp quotation copied for ${observation.productName}!", Toast.LENGTH_SHORT).show()
+    }
+
+    // Bot Catalog Products Adapter
+    inner class BotProductsAdapter(
+        private val list: List<PriceObservation>,
+        private val marginPercent: Double,
+        private val fixedMarkup: Double,
+        private val onClick: (PriceObservation) -> Unit
+    ) : RecyclerView.Adapter<BotProductsAdapter.ViewHolder>() {
+
+        inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+            val tvName: TextView = view.findViewById(R.id.tvBotProdName)
+            val tvStock: TextView = view.findViewById(R.id.tvBotProdStock)
+            val tvSpecs: TextView = view.findViewById(R.id.tvBotProdSpecs)
+            val tvWholesale: TextView = view.findViewById(R.id.tvBotProdWholesalePrice)
+            val tvResale: TextView = view.findViewById(R.id.tvBotProdResalePrice)
+            val btnQuote: View = view.findViewById(R.id.btnBotProdCopyQuote)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val v = LayoutInflater.from(parent.context).inflate(R.layout.item_bot_catalog_product, parent, false)
+            return ViewHolder(v)
+        }
+
+        override fun getItemCount(): Int = list.size
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val item = list[position]
+            val calc = ProfitCalculation(item.amountPkr, item.amount, marginPercent, fixedMarkup)
+
+            holder.tvName.text = item.productName
+            holder.tvStock.text = item.stockStatus
+            holder.tvSpecs.text = "${item.duration} | ${item.accessType.name} | 🛡 ${item.warranty}"
+            holder.tvWholesale.text = "Wholesale: $${String.format(Locale.ROOT, "%.2f", item.amount)} ${item.currency} (~Rs. ${String.format(Locale.ROOT, "%,.0f", item.amountPkr)} PKR)"
+            holder.tvResale.text = "🇵🇰 Sell: Rs. ${String.format(Locale.ROOT, "%,.0f", calc.suggestedRetailPkr)} PKR (Profit: Rs. ${String.format(Locale.ROOT, "%,.0f", calc.netProfitPkr)})"
+
+            holder.btnQuote.setOnClickListener {
+                copySingleProductQuote(item, calc)
+            }
+
+            holder.view.setOnClickListener {
+                onClick(item)
+            }
+        }
     }
 }

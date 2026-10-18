@@ -57,21 +57,22 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.5
-          name: "Telegram Supplier Price Finder v1.0.5 (Telegram-Native Discovery & Autonomous Bot Intelligence)"
+          tag_name: v1.0.6
+          name: "Telegram Supplier Price Finder v1.0.6 (Bot Catalog Intelligence & Resale Margin Calculator)"
           draft: false
           prerelease: false
           generate_release_notes: false
           body: |
-            ### 📱 Telegram Supplier Price Finder v1.0.5 (Direct APK Download)
+            ### 📱 Telegram Supplier Price Finder v1.0.6 (Direct APK Download)
 
-            Direct `.apk` file for Android phones with Telegram-Native Discovery & Autonomous Product Intelligence:
-            - **Telegram-Native Bot Discovery**: Discovers eligible supplier bots directly from your authenticated Telegram account dialogs (`ChatTypePrivate` + `UserTypeBot`). Segregates seed demo suppliers from live account bots.
-            - **Existing Bot vs New Bot**: Checks chat history first; resumes active keyboard menus without sending redundant `/start` to existing bots.
-            - **Target Product Aliases & Ranked Menus**: Ranks navigation buttons according to target tool aliases (e.g. Canva Pro, ChatGPT Plus, CapCut Pro) to explore relevant branches first.
-            - **Search Policies**: Supports `⚡ Fast Lookup` (stops once target product variants are extracted) and `🌐 Exhaustive Crawl` (explores all safe branches and pagination).
-            - **Honest Search Exhaustion**: Never skips unfinished bots; records truthful states (`SEARCH_POLICY_SATISFIED`, `SEARCH_EXHAUSTED_NOT_FOUND`, `PARTIAL`, `MEMBERSHIP_GATE`).
-            - **One Bot Per Scan Deduplication**: Guarantees each supplier bot is processed at most once per scan run.
+            Direct `.apk` file for Android phones with Advanced Supplier Intelligence (SI / AI) & Autonomous Catalog Extraction:
+            - **Per-Bot Product Portfolio & Catalog Viewer**: Tap **📦 Catalog** on any supplier bot to inspect all harvested tools, duration, access model, stock, and warranty.
+            - **🇵🇰 Pakistan Resale Profit Margin Calculator**: Automatically calculates Pakistani retail selling prices with custom profit margins (+20%, +30%, or +Rs. 500 fixed markup) auto-rounded to nearest Rs. 50.
+            - **1-Click WhatsApp Customer Quotations**: Instant copy formatted, professional quotations ready to dispatch to Pakistani buyers on WhatsApp or paste into `aitoolgems.tech`.
+            - **Price Fluctuation History & Market Trends**: Tracks price drops and increases across all bots over time.
+            - **Telegram-Native Discovery**: Discovers live shop bots directly from your authenticated Telegram account dialogs (`ChatTypePrivate` + `UserTypeBot`).
+            - **Active Menu Resumption**: Reuses active keyboards without sending redundant `/start` to existing bots.
+            - **Search Policies**: Supports `⚡ Fast Lookup` and `🌐 Exhaustive Crawl`.
             - **Optimized ARM APK**: Pre-packaged with native TDLib binaries for arm64-v8a and armeabi-v7a.
 
             #### ⚠️ Installation Note:

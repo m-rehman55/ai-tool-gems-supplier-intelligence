@@ -566,6 +566,130 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
         return list
     }
 
+    /**
+     * Retrieves all tools/products discovered for an individual supplier bot.
+     */
+    fun getObservationsForSupplier(supplierId: Long): List<PriceObservation> {
+        val list = mutableListOf<PriceObservation>()
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_OBSERVATIONS WHERE supplier_id = ? ORDER BY product_name ASC, amount_pkr ASC",
+            arrayOf(supplierId.toString())
+        )
+        cursor.use { c ->
+            while (c.moveToNext()) {
+                list.add(cursorToObservation(c))
+            }
+        }
+        return list
+    }
+
+    /**
+     * Returns the count of distinct products associated with a specific supplier bot.
+     */
+    fun getProductsCountForSupplier(supplierId: Long): Int {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT COUNT(*) FROM $TABLE_OBSERVATIONS WHERE supplier_id = ?",
+            arrayOf(supplierId.toString())
+        )
+        var count = 0
+        cursor.use {
+            if (it.moveToFirst()) {
+                count = it.getInt(0)
+            }
+        }
+        return count
+    }
+
+    /**
+     * Generates a comprehensive catalog profile & statistics for a specific bot.
+     */
+    fun getSupplierCatalogSummary(supplierId: Long): BotCatalogSummary {
+        val products = getObservationsForSupplier(supplierId)
+        val supplier = getAllSuppliers().firstOrNull { it.id == supplierId }
+        val sName = supplier?.canonicalName ?: (products.firstOrNull()?.supplierName ?: "Supplier Bot")
+        val sHandle = supplier?.primaryHandle ?: (products.firstOrNull()?.supplierHandle ?: "@supplier_bot")
+        val source = supplier?.source ?: "TELEGRAM_DISCOVERY"
+
+        val minUsd = products.minOfOrNull { it.amount } ?: 0.0
+        val maxUsd = products.maxOfOrNull { it.amount } ?: 0.0
+        val minPkr = products.minOfOrNull { it.amountPkr } ?: 0.0
+        val maxPkr = products.maxOfOrNull { it.amountPkr } ?: 0.0
+        val distinctTools = products.map { it.productName.lowercase().trim() }.distinct().size
+        val lastObserved = products.maxOfOrNull { it.observedAt }
+        val categories = products.map { it.productName }.distinct()
+
+        return BotCatalogSummary(
+            supplierId = supplierId,
+            supplierName = sName,
+            supplierHandle = sHandle,
+            source = source,
+            totalProducts = products.size,
+            minPriceUsd = minUsd,
+            maxPriceUsd = maxUsd,
+            minPricePkr = minPkr,
+            maxPricePkr = maxPkr,
+            distinctToolsCount = distinctTools,
+            lastObservedAt = lastObserved,
+            categories = categories,
+            products = products
+        )
+    }
+
+    /**
+     * Retrieves chronological price changes for a specific supplier.
+     */
+    fun getPriceHistoryForSupplier(supplierId: Long): List<PriceHistoryEntry> {
+        val list = mutableListOf<PriceHistoryEntry>()
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_PRICE_HISTORY WHERE supplier_id = ? ORDER BY changed_at DESC",
+            arrayOf(supplierId.toString())
+        )
+        cursor.use { c ->
+            while (c.moveToNext()) {
+                list.add(cursorToPriceHistory(c))
+            }
+        }
+        return list
+    }
+
+    /**
+     * Retrieves all price fluctuations (ups and downs) across all bots.
+     */
+    fun getAllPriceFluctuations(limit: Int = 50): List<PriceHistoryEntry> {
+        val list = mutableListOf<PriceHistoryEntry>()
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_PRICE_HISTORY WHERE old_amount IS NOT NULL AND old_amount != new_amount ORDER BY changed_at DESC LIMIT ?",
+            arrayOf(limit.toString())
+        )
+        cursor.use { c ->
+            while (c.moveToNext()) {
+                list.add(cursorToPriceHistory(c))
+            }
+        }
+        return list
+    }
+
+    private fun cursorToPriceHistory(c: android.database.Cursor): PriceHistoryEntry {
+        val oldAmtIdx = c.getColumnIndexOrThrow("old_amount")
+        val oldAmt = if (c.isNull(oldAmtIdx)) null else c.getDouble(oldAmtIdx)
+        return PriceHistoryEntry(
+            id = c.getLong(c.getColumnIndexOrThrow("id")),
+            observationId = c.getLong(c.getColumnIndexOrThrow("observation_id")),
+            supplierId = c.getLong(c.getColumnIndexOrThrow("supplier_id")),
+            productName = c.getString(c.getColumnIndexOrThrow("product_name")),
+            planName = c.getString(c.getColumnIndexOrThrow("plan_name")),
+            oldAmount = oldAmt,
+            newAmount = c.getDouble(c.getColumnIndexOrThrow("new_amount")),
+            currency = c.getString(c.getColumnIndexOrThrow("currency")),
+            amountPkr = c.getDouble(c.getColumnIndexOrThrow("amount_pkr")),
+            changedAt = c.getLong(c.getColumnIndexOrThrow("changed_at"))
+        )
+    }
+
     private fun cursorToObservation(c: android.database.Cursor): PriceObservation {
         return PriceObservation(
             id = c.getLong(c.getColumnIndexOrThrow("id")),

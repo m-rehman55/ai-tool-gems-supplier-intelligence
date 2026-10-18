@@ -57,16 +57,18 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.1
-          name: "Telegram Supplier Price Finder v1.0.1 (Direct APK)"
+          tag_name: v1.0.2
+          name: "Telegram Supplier Price Finder v1.0.2 (Genuine MTProto & TDLib)"
           draft: false
           prerelease: false
           generate_release_notes: false
           body: |
-            ### 📱 Telegram Supplier Price Finder v1.0.1 (Direct Download)
+            ### 📱 Telegram Supplier Price Finder v1.0.2 (Direct APK Download)
 
             Download the direct `.apk` file below directly onto your Android phone:
-            - **No ZIP extraction needed** — tap `app-debug.apk` directly to install.
+            - **Genuine Telegram MTProto Authentication (TDLib)**: Direct connection to Telegram DC servers; triggers official 5-digit verification codes to your active Telegram accounts.
+            - **Wholesale Search Fix**: Seed catalog now includes ChatGPT, Canva Pro, Google Gemini, Claude, and Netflix wholesale plans.
+            - **No ZIP extraction needed**: Tap `app-debug.apk` directly to install.
             - **Signed with stable keystore** (`v1` and `v2` signatures enabled).
             - **Supports Android 7.0 Nougat to Android 14** (`minSdk = 24`).
 

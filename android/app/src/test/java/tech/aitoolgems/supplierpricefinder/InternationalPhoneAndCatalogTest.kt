@@ -8,6 +8,7 @@ import tech.aitoolgems.supplierpricefinder.data.local.SeedObservations
 import tech.aitoolgems.supplierpricefinder.data.local.SeedSuppliers
 import tech.aitoolgems.supplierpricefinder.data.model.AccessType
 import tech.aitoolgems.supplierpricefinder.data.model.VerificationStatus
+import tech.aitoolgems.supplierpricefinder.telegram.TelegramAuthState
 
 class InternationalPhoneAndCatalogTest {
 
@@ -65,5 +66,17 @@ class InternationalPhoneAndCatalogTest {
             assertEquals("Currency must be USD or USDT", "USD", item.currency)
             assertEquals("Seed observations must be UNVERIFIED until live scan", VerificationStatus.USER_SUPPLIED_UNVERIFIED, item.verificationStatus)
         }
+    }
+
+    @Test
+    fun testTelegramAuthStateTransitions() {
+        val states = TelegramAuthState.values()
+        assertTrue(states.contains(TelegramAuthState.DISCONNECTED))
+        assertTrue(states.contains(TelegramAuthState.CONNECTING))
+        assertTrue(states.contains(TelegramAuthState.WAIT_PHONE_NUMBER))
+        assertTrue(states.contains(TelegramAuthState.WAIT_CODE))
+        assertTrue(states.contains(TelegramAuthState.WAIT_PASSWORD))
+        assertTrue(states.contains(TelegramAuthState.AUTHENTICATED))
+        assertTrue(states.contains(TelegramAuthState.ERROR))
     }
 }

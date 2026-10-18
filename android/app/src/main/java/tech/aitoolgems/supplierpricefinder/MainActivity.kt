@@ -25,6 +25,8 @@ import tech.aitoolgems.supplierpricefinder.databinding.ActivityMainBinding
 import tech.aitoolgems.supplierpricefinder.engine.WinnerEngine
 import tech.aitoolgems.supplierpricefinder.telegram.ScanProgressListener
 import tech.aitoolgems.supplierpricefinder.telegram.TelegramScanner
+import tech.aitoolgems.supplierpricefinder.telegram.TelegramClientManager
+import tech.aitoolgems.supplierpricefinder.telegram.TelegramAuthState
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -137,16 +139,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateTelegramStatusChip() {
-        if (secureStorage.isConfigured) {
+        val tgManager = TelegramClientManager.getInstance(this)
+        if (tgManager.currentAuthState == TelegramAuthState.AUTHENTICATED) {
+            val user = tgManager.authenticatedUserName ?: secureStorage.phoneNumber ?: "Connected"
+            binding.chipTelegramStatus.text = "Telegram: Connected ($user)"
+            binding.chipTelegramStatus.setChipBackgroundColorResource(R.color.badge_verified)
+            binding.chipTelegramStatus.setTextColor(getColor(R.color.badge_verified_text))
+        } else if (secureStorage.isConfigured) {
             val rawPhone = secureStorage.phoneNumber ?: ""
             val maskedPhone = if (rawPhone.length > 6) {
                 rawPhone.take(3) + "****" + rawPhone.takeLast(4)
             } else {
                 "Configured"
             }
-            binding.chipTelegramStatus.text = "Telegram: Credentials Stored ($maskedPhone)"
-            binding.chipTelegramStatus.setChipBackgroundColorResource(R.color.badge_verified)
-            binding.chipTelegramStatus.setTextColor(getColor(R.color.badge_verified_text))
+            binding.chipTelegramStatus.text = "Telegram: Credentials Saved ($maskedPhone)"
+            binding.chipTelegramStatus.setChipBackgroundColorResource(R.color.badge_unverified)
+            binding.chipTelegramStatus.setTextColor(getColor(R.color.badge_unverified_text))
         } else {
             binding.chipTelegramStatus.text = getString(R.string.telegram_status_disconnected)
             binding.chipTelegramStatus.setChipBackgroundColorResource(R.color.card_background)
@@ -454,44 +462,82 @@ class MainActivity : AppCompatActivity() {
             secureStorage.apiHash = hash
             secureStorage.phoneNumber = phone
 
-            // Trigger OTP request
-            tvTelegramStatusMsg.text = "Connecting to Telegram DC servers with API ID $id for $phone..."
-            layoutOtpVerification.visibility = View.VISIBLE
-            tvTelegramStatusMsg.text = "✓ Login code requested! Please open your official Telegram app in Japan/laptop (under 'Telegram' chat) to view your 5-digit code. Enter it below and click 'Verify & Connect'."
-            Toast.makeText(this, "Code requested! Check your official Telegram chat.", Toast.LENGTH_LONG).show()
+            // Trigger genuine MTProto authentication flow via TDLib
+            val tgManager = TelegramClientManager.getInstance(this)
+            tgManager.onStateChangedListener = { state, msg ->
+                runOnUiThread {
+                    tvTelegramStatusMsg.text = msg
+                    when (state) {
+                        TelegramAuthState.WAIT_CODE -> {
+                            layoutOtpVerification.visibility = View.VISIBLE
+                            btnRequestOtp.visibility = View.GONE
+                            tvTelegramStatusMsg.setTextColor(getColor(R.color.badge_verified_text))
+                            Toast.makeText(this@MainActivity, "Code dispatched! Check your Telegram app.", Toast.LENGTH_LONG).show()
+                        }
+                        TelegramAuthState.WAIT_PASSWORD -> {
+                            layoutOtpVerification.visibility = View.VISIBLE
+                            etTwoStepPassword.visibility = View.VISIBLE
+                            tvTelegramStatusMsg.setTextColor(getColor(R.color.primary))
+                        }
+                        TelegramAuthState.AUTHENTICATED -> {
+                            secureStorage.sessionString = "TDLIB_SESSION_ACTIVE"
+                            updateTelegramStatusChip()
+                            Toast.makeText(this@MainActivity, "✓ Connected to Telegram: ${tgManager.authenticatedUserName ?: phone}", Toast.LENGTH_LONG).show()
+                        }
+                        TelegramAuthState.ERROR -> {
+                            tvTelegramStatusMsg.setTextColor(getColor(R.color.badge_risk_text))
+                        }
+                        else -> {}
+                    }
+                }
+            }
+            tgManager.startAuthentication(id.toIntOrNull() ?: 0, hash, phone)
         }
 
         AlertDialog.Builder(this)
             .setView(view)
             .setPositiveButton("Verify & Connect") { _, _ ->
-                val id = etApiId.text.toString().trim()
-                val hash = etApiHash.text.toString().trim()
-                var phone = etPhoneNumber.text.toString().trim()
                 val code = etOtpCode.text.toString().trim()
+                val password = etTwoStepPassword.text.toString().trim()
+                val phone = etPhoneNumber.text.toString().trim()
+                val tgManager = TelegramClientManager.getInstance(this)
 
-                if (id.isNotEmpty() && hash.isNotEmpty()) {
-                    if (phone.isNotEmpty() && !phone.startsWith("+")) {
-                        phone = "+$phone"
+                if (code.isNotEmpty()) {
+                    tvTelegramStatusMsg.text = "Verifying code with Telegram DC servers..."
+                    tgManager.submitVerificationCode(code) { success, msg ->
+                        if (success) {
+                            if (password.isNotEmpty()) {
+                                tgManager.submitPassword(password) { passSuccess, passMsg ->
+                                    if (passSuccess) {
+                                        secureStorage.sessionString = "TDLIB_SESSION_ACTIVE"
+                                        updateTelegramStatusChip()
+                                        Toast.makeText(this@MainActivity, "✓ Connected to Telegram!", Toast.LENGTH_SHORT).show()
+                                        loadInitialData()
+                                    } else {
+                                        Toast.makeText(this@MainActivity, "2FA Error: $passMsg", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            } else {
+                                secureStorage.sessionString = "TDLIB_SESSION_ACTIVE"
+                                updateTelegramStatusChip()
+                                Toast.makeText(this@MainActivity, "✓ Connected to Telegram!", Toast.LENGTH_SHORT).show()
+                                loadInitialData()
+                            }
+                        } else {
+                            Toast.makeText(this@MainActivity, "Verification failed: $msg", Toast.LENGTH_LONG).show()
+                        }
                     }
-                    secureStorage.apiId = id
-                    secureStorage.apiHash = hash
-                    secureStorage.phoneNumber = phone
-
-                    if (code.isNotEmpty()) {
-                        secureStorage.sessionString = "CONFIGURED_API_AUTH_${phone.filter { it.isDigit() }}"
-                        updateTelegramStatusChip()
-                        Toast.makeText(this, "Telegram credentials stored. Authenticated preview & catalog explorer active.", Toast.LENGTH_LONG).show()
-                    } else {
-                        updateTelegramStatusChip()
-                        Toast.makeText(this, "Telegram credentials encrypted in Android Keystore.", Toast.LENGTH_LONG).show()
-                    }
+                } else {
+                    updateTelegramStatusChip()
                 }
             }
             .setNegativeButton("Cancel", null)
             .setNeutralButton("Disconnect") { _, _ ->
-                secureStorage.clearCredentials()
-                updateTelegramStatusChip()
-                Toast.makeText(this, "Credentials cleared.", Toast.LENGTH_SHORT).show()
+                TelegramClientManager.getInstance(this).logOut {
+                    secureStorage.clearCredentials()
+                    updateTelegramStatusChip()
+                    Toast.makeText(this, "Disconnected from Telegram.", Toast.LENGTH_SHORT).show()
+                }
             }
             .show()
     }

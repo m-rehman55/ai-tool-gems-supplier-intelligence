@@ -61,31 +61,46 @@ class TelegramScanner(
 
                 val supplierQuotes = mutableListOf<PriceObservation>()
 
-                // 1. Attempt live channel preview fetch from publicUrl or direct handle preview
-                val channelHandle = supplier.primaryHandle.trim().removePrefix("@")
-                val targetUrl = when {
-                    !supplier.publicUrl.isNullOrEmpty() && supplier.publicUrl.contains("t.me/s/") -> supplier.publicUrl
-                    else -> "https://t.me/s/$channelHandle"
-                }
-
-                try {
-                    val request = Request.Builder()
-                        .url(targetUrl)
-                        .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
-                        .build()
-                    val response = httpClient.newCall(request).execute()
-                    response.use { resp ->
-                        if (resp.isSuccessful) {
-                            val body = resp.body?.string() ?: ""
-                            val liveQuotes = parseChannelHtml(body, supplier, targetQuery, fxRateUsdToPkr, fxRateUsdtToPkr)
-                            supplierQuotes.addAll(liveQuotes)
+                // 1. If Telegram MTProto is authenticated, inspect real bot via TDLib!
+                val tgManager = TelegramClientManager.getInstance(context)
+                if (tgManager.currentAuthState == TelegramAuthState.AUTHENTICATED) {
+                    try {
+                        val botQuotes = tgManager.inspectSupplierBot(supplier.primaryHandle, targetQuery) { msg ->
+                            listener?.onSupplierScanning(supplier.primaryHandle, msg)
                         }
+                        supplierQuotes.addAll(botQuotes)
+                    } catch (e: Exception) {
+                        // TDLib bot scan fallback
                     }
-                } catch (e: Exception) {
-                    // Network timeout, rate limit, or VPN required -> log status for transparency
                 }
 
-                // 2. If live network didn't yield quotes, check stored observations for this supplier
+                // 2. Fallback: attempt live channel preview fetch from publicUrl or direct handle preview
+                if (supplierQuotes.isEmpty()) {
+                    val channelHandle = supplier.primaryHandle.trim().removePrefix("@")
+                    val targetUrl = when {
+                        !supplier.publicUrl.isNullOrEmpty() && supplier.publicUrl.contains("t.me/s/") -> supplier.publicUrl
+                        else -> "https://t.me/s/$channelHandle"
+                    }
+
+                    try {
+                        val request = Request.Builder()
+                            .url(targetUrl)
+                            .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
+                            .build()
+                        val response = httpClient.newCall(request).execute()
+                        response.use { resp ->
+                            if (resp.isSuccessful) {
+                                val body = resp.body?.string() ?: ""
+                                val liveQuotes = parseChannelHtml(body, supplier, targetQuery, fxRateUsdToPkr, fxRateUsdtToPkr)
+                                supplierQuotes.addAll(liveQuotes)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Network timeout, rate limit, or VPN required -> log status for transparency
+                    }
+                }
+
+                // 3. If live network didn't yield quotes, check stored observations for this supplier
                 if (supplierQuotes.isEmpty()) {
                     val dbQuotes = database.getObservationsForSupplierAndQuery(supplier.id, targetQuery)
                     supplierQuotes.addAll(dbQuotes)

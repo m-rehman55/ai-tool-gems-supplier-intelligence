@@ -11,8 +11,8 @@ android {
         applicationId = "tech.aitoolgems.supplierpricefinder"
         minSdk = 24
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -56,6 +56,20 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    packaging {
+        resources {
+            excludes += setOf(
+                "/META-INF/{AL2.0,LGPL2.1}",
+                "/META-INF/DEPENDENCIES",
+                "/META-INF/LICENSE*",
+                "/META-INF/NOTICE*"
+            )
+        }
+        jniLibs {
+            pickFirsts += setOf("**/libc++_shared.so")
+        }
+    }
 }
 
 dependencies {
@@ -80,6 +94,9 @@ dependencies {
     // JSON & Network
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Telegram TDLib (MTProto native client)
+    implementation("io.github.tdlib-android:core:0.1.1")
 
     // Unit Testing
     testImplementation("junit:junit:4.13.2")
